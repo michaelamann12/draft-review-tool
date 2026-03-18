@@ -354,6 +354,14 @@
       <option>WW</option><option>Amplify</option><option>EL</option><option>MP</option>
       <option>HMH</option><option>Fishtank</option><option>StudySync</option><option>CKLA</option>
     </select>
+    <label for="lessonSelect">Load Lesson</label>
+    <select id="lessonSelect" onchange="loadLesson(this.value)" style="width:260px;">
+      <option value="">-- select to load --</option>
+      <option value="AM_CK3_XX_G4_7.0_1">CKLA G4 L1: Exploring Characters</option>
+      <option value="AM_CK3_XX_G4_7.0_2">CKLA G4 L2: Point of View</option>
+      <option value="SV_MYP_XX_G8_4.0_5">MP G8 L5: Literal Comprehension</option>
+      <option value="SV_MYP_XX_G8_4.0_11">MP G8 L11: Theme Analysis</option>
+    </select>
     <label for="reviewDate">Date</label>
     <input type="date" id="reviewDate" onchange="markDirty()">
   </div>
@@ -686,6 +694,168 @@
   const NUM_DQS = 8;
   const RUBRIC_NAMES_A = ["r_verbfid", "r_speccomp"];
   const RUBRIC_NAMES_B = ["r_rigor", "r_scaffold", "r_assess", "r_coverage", "r_gradelevel"];
+
+  // ---- Pre-loaded lesson data ----
+  const LESSON_DATA = {
+    "AM_CK3_XX_G4_7.0_1": {
+      lessonId: "AM_CK3_XX_G4_7.0_1_v1",
+      grade: "G4",
+      curriculum: "CKLA",
+      planTTVerbatim: "How is Caleb characterized in these excerpts?\n\nRespond in a paragraph that includes your claim, evidence from the text, and an explanation.",
+      planTTOutline: "",
+      planTTFormat: "QuickWrite ELEM",
+      planDQVerbatim: "- What does Caleb think his father means when he calls him extraordinary?\n- How does Caleb feel about being ordinary?",
+      planDQOutline: "- 1 multiple choice vocabulary in context question (word: extraordinary)\n- 4 additional driving questions (five total)",
+      planNotes: "",
+      draftAssessment: "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation.",
+      draftClaim: "In one sentence, write a claim that answers the following question: How is Caleb characterized in these excerpts?",
+      draftDQs: [
+        "MC (vocab): Dad calls Caleb \"extraordinary.\" What does \"extraordinary\" mean as Dad uses it here? \u2192 A. Very ordinary and plain, B. Strange and confusing, C. Remarkable and exceptional, D. Loud and attention-seeking (Answer: C)",
+        "What does Caleb think his father means when he calls him extraordinary?",
+        "How does Caleb feel about being ordinary?",
+        "Highlight one detail from Excerpt 3 that shows what Caleb wants to be like.",
+        "What does Caleb's thought \"Who's ordinary now?\" show about who he is?",
+        "", "", ""
+      ],
+      draftExtension: "Caleb has pictures of the Grand Canyon, the Milky Way, Victoria Falls, and Table Mountain taped to his bunk. What do you think these pictures tell us about who Caleb wants to become?"
+    },
+    "AM_CK3_XX_G4_7.0_2": {
+      lessonId: "AM_CK3_XX_G4_7.0_2_v1",
+      grade: "G4",
+      curriculum: "CKLA",
+      planTTVerbatim: "How does Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter and why?\n\nWrite a response using your claim, one piece of evidence from the text, and an explanation of how that evidence supports your claim.",
+      planTTOutline: "",
+      planTTFormat: "QuickWrite ELEM",
+      planDQVerbatim: "- How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?\n- What happens to Caleb while the boys are doing their chores?",
+      planDQOutline: "- 1 MC vocab in context question (word: transgressions)\n- A question about how Caleb/Bobby Gene feel at the end of the chapter",
+      planNotes: "- Because this chapter is long, all driving questions should give students a specific paragraph range (2-5 paragraphs) to look at\n- 5 total driving questions",
+      draftAssessment: "How do Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter and why? Write a response using your claim, one piece of evidence from the text, and an explanation of how that evidence supports your claim.",
+      draftClaim: "In one sentence, write a claim: How does Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter, and why? Include both the change and a reason.",
+      draftDQs: [
+        "MC (vocab): In paragraph 1, what does \"transgressions\" mean as it is used in this sentence? \u2192 A. Punishments, B. Arguments, C. Bad choices or wrongdoings, D. Chores (Answer: C)",
+        "Go back to paragraphs 13-16. How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?",
+        "Look at paragraphs 48-50. What happens to Caleb while the boys are doing their chores?",
+        "Highlight one detail from paragraphs 55-59 that shows the boys\u2019 feelings about Cory have changed.",
+        "Re-read paragraphs 56-59. How do Caleb and Bobby Gene feel about Cory by the end of the chapter?",
+        "", "", ""
+      ],
+      draftExtension: "Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?"
+    },
+    "SV_MYP_XX_G8_4.0_5": {
+      lessonId: "SV_MYP_XX_G8_4.0_5_v1",
+      grade: "G8",
+      curriculum: "MP",
+      planTTVerbatim: "",
+      planTTOutline: "1. Central Idea MC question (paragraphs 58-120) only\n2. Write a 2-3 sentence summary of this excerpt from Flowers for Algernon.",
+      planTTFormat: "Other",
+      planDQVerbatim: "- Why does Miss Kinnian tell Charlie not to correct his punctuation?\n- Why are Doctors Nemur and Strauss arguing?",
+      planDQOutline: "",
+      planNotes: "5 driving questions, all open response (lcq or tdq)\nQuestions must cover the full breadth of the excerpt\nQuestions should be in sequential order",
+      draftAssessment: "MC: Which statement best expresses the central idea of this section of \"Flowers for Algernon\" (paragraphs 58-120)?\n\nSummary: Write a 2-3 sentence summary of this excerpt from \"Flowers for Algernon\" (paragraphs 58-120).",
+      draftClaim: "",
+      draftDQs: [
+        "Why does Miss Kinnian tell Charlie not to correct his old Progress Reports?",
+        "What happens to Charlie at the party with Joe Carp and Frank Reilly?",
+        "Why are Doctors Nemur and Strauss arguing?",
+        "How do Charlie\u2019s coworkers treat him after he starts getting smarter?",
+        "What does Miss Kinnian tell Charlie during their dinner about his learning?",
+        "", "", ""
+      ],
+      draftExtension: "Charlie says finding out people laughed at him is \"a good thing.\" Do you agree with him \u2014 can a painful realization be a good thing?"
+    },
+    "SV_MYP_XX_G8_4.0_11": {
+      lessonId: "SV_MYP_XX_G8_4.0_11_v1",
+      grade: "G8",
+      curriculum: "MP",
+      planTTVerbatim: "How does Charlie\u2019s experience with increased intelligence develop the theme of what it means to be truly human?\n\nRespond in a paragraph that includes your claim, at least two pieces of evidence from the text, and an explanation of each.",
+      planTTOutline: "",
+      planTTFormat: "QuickWrite ELEM",
+      planDQVerbatim: "",
+      planDQOutline: "- Mix of highlight and tdq questions\n- Should trace 2-3 key moments of the story (maybe from beginning, middle, end)\n- Focus on what Charlie does/says (highlight) and what this reveals about his humanity (tdq)",
+      planNotes: "",
+      draftAssessment: "How does Charlie\u2019s experience with increased intelligence develop the theme of what it means to be truly human? Respond in a paragraph that includes your claim, at least two pieces of evidence from the text, and an explanation of each.",
+      draftClaim: "Consider the evidence you gathered. In one sentence, write a claim answering: How does Charlie\u2019s experience develop the theme of what it means to be truly human?",
+      draftDQs: [
+        "According to paragraphs 78-80, how does Charlie react when he realizes people are laughing at him?",
+        "Highlight one detail from paragraphs 149-151 that shows what Charlie does when he sees the dishwasher boy being mocked.",
+        "In paragraph 153, Charlie says people \"think nothing of abusing a man born with low intelligence.\" What does this reveal about what Charlie now understands?",
+        "Highlight one detail from paragraphs 225-227 that shows how Charlie feels about his experience, even after losing his intelligence.",
+        "Compare how others treat Charlie in Excerpt 1 with how Joe and Frank treat him in Excerpt 3. What has changed?",
+        "", "", ""
+      ],
+      draftExtension: "In his final report, Charlie writes that \"its easy to make frends if you let pepul laff at you.\" Do you think Charlie truly believes this, or has his understanding of friendship changed?"
+    }
+  };
+
+  window.loadLesson = function(key) {
+    if (!key) return;
+    var data = LESSON_DATA[key];
+    if (!data) return;
+
+    // Clear form without confirmation dialog
+    currentEditId = null;
+    document.getElementById("lessonId").value = "";
+    document.getElementById("gradeSelect").value = "";
+    document.getElementById("curriculumSelect").value = "";
+    ["planTTVerbatim","planTTOutline","planDQVerbatim","planDQOutline","planNotes",
+     "draftAssessment","draftClaim","draftExtension"].forEach(function(id) {
+      document.getElementById(id).value = "";
+    });
+    document.getElementById("planTTFormat").value = "";
+    for (var i = 1; i <= NUM_DQS; i++) {
+      document.getElementById("draftDQ" + i).value = "";
+      document.getElementById("draftDQV" + i).checked = false;
+      document.getElementById("specTagDQ" + i).value = "";
+      applySpecTag("draftDQRow" + i, "");
+      document.getElementById("noteDQ" + i).value = "";
+      document.getElementById("authoredDQ" + i).value = "";
+    }
+    ["Assessment","Claim","Extension"].forEach(function(k) {
+      document.getElementById("specTag" + k).value = "";
+      document.getElementById("note" + k).value = "";
+    });
+    applySpecTag("draftAssessmentGroup", "");
+    applySpecTag("draftClaimGroup", "");
+    applySpecTag("draftExtensionGroup", "");
+    ["authoredAssessment","authoredClaim","authoredExtension"].forEach(function(id) {
+      document.getElementById(id).value = "";
+    });
+    document.getElementById("keyObservations").value = "";
+    document.getElementById("skillRecommendations").value = "";
+    document.querySelectorAll(".q-note-area.open").forEach(function(el) { el.classList.remove("open"); });
+    document.querySelectorAll(".q-note-toggle").forEach(function(el) { el.textContent = "+ Add note"; });
+    RUBRIC_NAMES_A.concat(RUBRIC_NAMES_B).forEach(function(name) {
+      document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) { r.checked = false; });
+    });
+    NOTE_NAMES.forEach(function(name) {
+      var el = document.querySelector('input[name="' + name + '"]');
+      if (el) el.value = "";
+    });
+    document.getElementById("comparePanel").style.display = "none";
+    updateScores();
+
+    // Populate fields from lesson data
+    document.getElementById("lessonId").value = data.lessonId || "";
+    document.getElementById("gradeSelect").value = data.grade || "";
+    document.getElementById("curriculumSelect").value = data.curriculum || "";
+    document.getElementById("reviewDate").value = "2026-03-17";
+    document.getElementById("planTTVerbatim").value = data.planTTVerbatim || "";
+    document.getElementById("planTTOutline").value = data.planTTOutline || "";
+    document.getElementById("planTTFormat").value = data.planTTFormat || "";
+    document.getElementById("planDQVerbatim").value = data.planDQVerbatim || "";
+    document.getElementById("planDQOutline").value = data.planDQOutline || "";
+    document.getElementById("planNotes").value = data.planNotes || "";
+    document.getElementById("draftAssessment").value = data.draftAssessment || "";
+    document.getElementById("draftClaim").value = data.draftClaim || "";
+    document.getElementById("draftExtension").value = data.draftExtension || "";
+
+    for (var j = 1; j <= NUM_DQS; j++) {
+      document.getElementById("draftDQ" + j).value = (data.draftDQs && data.draftDQs[j - 1]) || "";
+    }
+
+    markDirty();
+    showToast("Loaded " + data.lessonId);
+  };
   const NOTE_NAMES = ["n_verbfid", "n_speccomp", "n_rigor", "n_scaffold", "n_assess", "n_coverage", "n_gradelevel"];
 
   let isDirty = false;
