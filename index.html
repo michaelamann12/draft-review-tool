@@ -306,6 +306,20 @@
   .comparison-table .note-cell textarea { min-height: 80px; font-size: 13px; }
   .comparison-table .note-cell { width: 140px; }
 
+  /* Question type badges */
+  .q-type-badge {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px;
+    border-radius: 4px; margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .q-type-badge.type-lcq { background: #dbeafe; color: #1e40af; }
+  .q-type-badge.type-tdq { background: #fae8ff; color: #7e22ce; }
+  .q-type-badge.type-mc { background: #f0fdf4; color: #166534; }
+  .q-type-badge.type-highlight { background: #fef3c7; color: #92400e; }
+  .q-type-badge.type-claim { background: #e0e7ff; color: #3730a3; }
+  .q-type-badge.type-quickwrite, .q-type-badge.type-shortwrite { background: #fce7f3; color: #9d174d; }
+  .q-type-badge.type-extension { background: #f1f5f9; color: #475569; }
+  .q-type-badge.type-other { background: #f1f5f9; color: #475569; }
+
   /* Row background colors based on spec tag */
   tr.spec-row-green td { background: #f0fdf4; }
   tr.spec-row-yellow td { background: #fefce8; }
@@ -722,7 +736,9 @@
       authoredClaim: "Write a claim answering: How is Caleb characterized in these excerpts? Make sure your claim names a specific character trait.",
       authoredAssessment: "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation.",
       authoredExtension: "What do you think Caleb will do next to prove he's not ordinary?",
-      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" }
+      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" },
+      authoredTypes: { q1: "MC", q2: "LCQ", q3: "LCQ", q4: "LCQ", q5: "Highlight", q6: "", q7: "", q8: "", claim: "Claim", assessment: "QuickWrite", extension: "Extension" },
+      draftTypes: { q1: "MC", q2: "LCQ", q3: "LCQ", q4: "Highlight", q5: "TDQ", q6: "", q7: "", q8: "", claim: "Claim", assessment: "QuickWrite", extension: "Extension" }
     },
     "AM_CK3_XX_G4_7.0_2": {
       lessonId: "AM_CK3_XX_G4_7.0_2_v1",
@@ -756,7 +772,9 @@
       authoredClaim: "",
       authoredAssessment: "",
       authoredExtension: "Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?",
-      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" }
+      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" },
+      authoredTypes: { q1: "MC", q2: "LCQ", q3: "LCQ", q4: "LCQ", q5: "TDQ", q6: "", q7: "", q8: "", claim: "Claim", assessment: "QuickWrite", extension: "Extension" },
+      draftTypes: { q1: "MC", q2: "LCQ", q3: "LCQ", q4: "Highlight", q5: "TDQ", q6: "", q7: "", q8: "", claim: "Claim", assessment: "QuickWrite", extension: "Extension" }
     },
     "SV_MYP_XX_G8_4.0_5": {
       lessonId: "SV_MYP_XX_G8_4.0_5_v1",
@@ -790,7 +808,9 @@
       authoredClaim: "",
       authoredAssessment: "MC: \"At the party, Charlie finally understands that his coworkers have been making fun of him. What does Charlie's reaction to this realization reveal about him?\"\n\nSummary: \"Write a 2-3 sentence summary of this excerpt from Flowers for Algernon.\"",
       authoredExtension: "Charlie still carries his rabbit's foot even though he's becoming more intelligent. Why do you think he holds onto it?",
-      specTags: { dq1: "red", dq2: "gray", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "", assessment: "gray", extension: "gray" }
+      specTags: { dq1: "red", dq2: "gray", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "", assessment: "gray", extension: "gray" },
+      authoredTypes: { q1: "LCQ", q2: "LCQ", q3: "LCQ", q4: "LCQ", q5: "LCQ", q6: "", q7: "", q8: "", claim: "", assessment: "MC + Summary", extension: "Extension" },
+      draftTypes: { q1: "LCQ", q2: "LCQ", q3: "LCQ", q4: "LCQ", q5: "LCQ", q6: "", q7: "", q8: "", claim: "", assessment: "MC + Summary", extension: "Extension" }
     },
     "SV_MYP_XX_G8_4.0_11": {
       lessonId: "SV_MYP_XX_G8_4.0_11_v1",
@@ -817,7 +837,9 @@
       authoredClaim: "",
       authoredAssessment: "",
       authoredExtension: "",
-      specTags: { dq1: "gray", dq2: "yellow", dq3: "yellow", dq4: "yellow", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "green", assessment: "green", extension: "gray" }
+      specTags: { dq1: "gray", dq2: "yellow", dq3: "yellow", dq4: "yellow", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "green", assessment: "green", extension: "gray" },
+      authoredTypes: { q1: "", q2: "", q3: "", q4: "", q5: "", q6: "", q7: "", q8: "", claim: "", assessment: "", extension: "" },
+      draftTypes: { q1: "LCQ", q2: "Highlight", q3: "TDQ", q4: "Highlight", q5: "TDQ", q6: "", q7: "", q8: "", claim: "Claim", assessment: "ShortWrite", extension: "Extension" }
     }
   };
 
@@ -843,8 +865,8 @@
             '<option value="red">\u26A0\uFE0F</option>' +
           '</select>' +
         '</td>' +
-        '<td><textarea id="authored_' + row.key + '" placeholder="25-26 authored version..." oninput="markDirty()"></textarea></td>' +
-        '<td><textarea id="draft_' + row.key + '" placeholder="Claude draft..." oninput="markDirty()"></textarea></td>' +
+        '<td><span id="atype_' + row.key + '" class="q-type-badge" style="display:none;"></span><textarea id="authored_' + row.key + '" placeholder="25-26 authored version..." oninput="markDirty()"></textarea></td>' +
+        '<td><span id="dtype_' + row.key + '" class="q-type-badge" style="display:none;"></span><textarea id="draft_' + row.key + '" placeholder="Claude draft..." oninput="markDirty()"></textarea></td>' +
         '<td class="note-cell"><textarea id="note_' + row.key + '" placeholder="Notes..." oninput="markDirty()"></textarea></td>' +
         '</tr>';
     }
@@ -870,6 +892,47 @@
   }
 
   // ---- Load lesson ----
+  // ---- Question type badge helpers ----
+  function typeToCssClass(type) {
+    if (!type) return "";
+    var t = type.toLowerCase().replace(/[^a-z]/g, "");
+    if (t === "mc" || t === "mcsummary") return "type-mc";
+    if (t === "lcq") return "type-lcq";
+    if (t === "tdq") return "type-tdq";
+    if (t === "highlight") return "type-highlight";
+    if (t === "claim") return "type-claim";
+    if (t === "quickwrite") return "type-quickwrite";
+    if (t === "shortwrite") return "type-shortwrite";
+    if (t === "extension") return "type-extension";
+    return "type-other";
+  }
+
+  function setTypeBadge(elId, type) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    if (!type) { el.style.display = "none"; el.textContent = ""; return; }
+    el.textContent = type;
+    el.className = "q-type-badge " + typeToCssClass(type);
+    el.style.display = "inline-block";
+  }
+
+  function applyTypeBadges(authoredTypes, draftTypes) {
+    var allKeys = ["q1","q2","q3","q4","q5","q6","q7","q8","claim","assessment","extension"];
+    for (var i = 0; i < allKeys.length; i++) {
+      var k = allKeys[i];
+      setTypeBadge("atype_" + k, authoredTypes ? authoredTypes[k] : "");
+      setTypeBadge("dtype_" + k, draftTypes ? draftTypes[k] : "");
+    }
+  }
+
+  function clearTypeBadges() {
+    var allKeys = ["q1","q2","q3","q4","q5","q6","q7","q8","claim","assessment","extension"];
+    for (var i = 0; i < allKeys.length; i++) {
+      setTypeBadge("atype_" + allKeys[i], "");
+      setTypeBadge("dtype_" + allKeys[i], "");
+    }
+  }
+
   window.loadLesson = function(key) {
     if (!key) return;
     var data = LESSON_DATA[key];
@@ -906,6 +969,9 @@
     document.getElementById("authored_claim").value = data.authoredClaim || "";
     document.getElementById("authored_assessment").value = data.authoredAssessment || "";
     document.getElementById("authored_extension").value = data.authoredExtension || "";
+
+    // Apply question type badges
+    applyTypeBadges(data.authoredTypes, data.draftTypes);
 
     // Apply spec tags
     if (data.specTags) {
@@ -1306,6 +1372,9 @@
       document.getElementById("spec_" + k).value = "";
       applyRowSpec(k);
     }
+
+    // Clear type badges
+    clearTypeBadges();
 
     // Clear review notes
     document.getElementById("keyObservations").value = "";
