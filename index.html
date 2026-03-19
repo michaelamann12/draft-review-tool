@@ -72,10 +72,10 @@
 
   /* ---- Panels ---- */
   .main { padding: 20px 24px; }
-  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; overflow: visible; }
   .panel {
     background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
     box-shadow: 0 1px 3px rgba(0,0,0,.04); padding: 24px;
+    margin-bottom: 20px;
   }
   .panel h2 {
     font-size: 17px; font-weight: 700; color: #1e3a5f;
@@ -105,11 +105,38 @@
   .field-group textarea { min-height: 100px; }
   .field-group textarea.tall { min-height: 140px; }
 
-  .dq-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
-  .dq-row label.dq-label { min-width: 28px; flex-shrink: 0; padding-top: 10px; font-weight: 700; color: #3b82f6; font-size: 14px; }
-  .dq-row textarea { flex: 1 1 0; min-width: 0; min-height: 80px; font-size: 14px; padding: 10px 12px; }
-  .dq-row .verbatim-check { display: flex; align-items: center; gap: 3px; padding-top: 8px; font-size: 12px; color: #667085; white-space: nowrap; flex-shrink: 0; }
-  .dq-row .verbatim-check input { margin: 0; }
+  /* ---- Module Plan Summary (collapsible) ---- */
+  .plan-summary {
+    background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 20px;
+  }
+  .plan-summary summary {
+    padding: 16px 24px; font-size: 17px; font-weight: 700; color: #1e3a5f;
+    cursor: pointer; user-select: none; list-style: none;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  .plan-summary summary::-webkit-details-marker { display: none; }
+  .plan-summary summary::before {
+    content: "\25B6"; display: inline-block; margin-right: 10px; font-size: 12px;
+    transition: transform .2s;
+  }
+  .plan-summary[open] summary::before { transform: rotate(90deg); }
+  .plan-summary .plan-body { padding: 20px 24px; }
+  .plan-field {
+    margin-bottom: 14px;
+  }
+  .plan-field-label {
+    font-size: 12px; font-weight: 700; color: #475467; text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 4px;
+  }
+  .plan-field-value {
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 10px 14px; font-size: 14px; line-height: 1.6; white-space: pre-wrap;
+    color: #1a1a2e; min-height: 24px;
+  }
+  .plan-field-value:empty::after {
+    content: "(not specified)"; color: #94a3b8; font-style: italic;
+  }
 
   /* ---- Compare highlights ---- */
   .compare-output {
@@ -214,28 +241,6 @@
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
   .unsaved-dot.hidden { display: none; }
 
-  /* ---- Print ---- */
-  @media print {
-    .header { position: static; box-shadow: none; }
-    .btn, .header-actions, .tab-bar, .history-controls, .verbatim-check,
-    .compare-output, .btn-compare, .toast, .spec-legend, .spec-tag-select,
-    .q-note-toggle, .q-note-area, .authored-panel, .verbatim-warning-banner { display: none !important; }
-    body { background: #fff; font-size: 12px; }
-    .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-    .comparison-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    textarea, input[type="text"], select {
-      border: none !important; background: none !important; box-shadow: none !important;
-      padding: 2px 0 !important; resize: none !important;
-    }
-    .radio-cell .radio-label { display: none; }
-    .radio-cell input[type="radio"]:checked + .radio-label {
-      display: block; background: none; border: 1px solid #000; font-size: 10px;
-    }
-    .rubric-table { font-size: 11px; }
-    .score-summary { background: #fff; border: 1px solid #000; }
-    .main { padding: 10px; }
-  }
-
   /* ---- Spec Legend ---- */
   .spec-legend {
     display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
@@ -247,50 +252,65 @@
     display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid #d0d5dd;
   }
 
-  /* ---- Spec tag dropdown ---- */
-  .spec-tag-select {
-    width: 48px; min-width: 48px; flex-shrink: 0; padding: 6px 2px; font-size: 14px; text-align: center;
+  /* ---- Comparison Table ---- */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .comparison-table th {
+    background: #f9fafb;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475467;
+    padding: 12px 8px;
+    border-bottom: 2px solid #e5e7eb;
+    text-align: left;
+  }
+  .comparison-table td {
+    padding: 8px;
+    border-bottom: 1px solid #f2f4f7;
+    vertical-align: top;
+  }
+  .comparison-table textarea {
+    width: 100%;
+    min-height: 120px;
+    font-size: 14px;
+    padding: 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-family: inherit;
+    resize: vertical;
+    background: #fafbfc;
+    line-height: 1.5;
+  }
+  .comparison-table textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,.12);
+    background: #fff;
+  }
+  .comparison-table .row-label {
+    font-weight: 700;
+    color: #3b82f6;
+    text-align: center;
+    font-size: 14px;
+    width: 60px;
+  }
+  .comparison-table .spec-cell { width: 55px; text-align: center; }
+  .comparison-table .spec-cell select {
+    width: 48px; padding: 6px 2px; font-size: 14px; text-align: center;
     border: 1px solid #d0d5dd; border-radius: 4px; background: #fff; cursor: pointer;
   }
-  .field-flex { display: flex; gap: 8px; align-items: flex-start; }
-  .field-flex textarea { flex: 1 1 0; min-width: 0; }
-  .spec-tag-select:focus { outline: none; border-color: #3b82f6; }
+  .comparison-table .spec-cell select:focus { outline: none; border-color: #3b82f6; }
+  .comparison-table .note-cell textarea { min-height: 80px; font-size: 13px; }
+  .comparison-table .note-cell { width: 140px; }
 
-  /* ---- Spec border on dq-row ---- */
-  .dq-row { border-left: 3px solid transparent; padding-left: 6px; transition: border-color .2s; }
-  .dq-row.spec-green { border-left-color: #22c55e; }
-  .dq-row.spec-yellow { border-left-color: #eab308; }
-  .dq-row.spec-gray { border-left-color: #d1d5db; }
-  .dq-row.spec-red { border-left-color: #ef4444; }
-
-  /* ---- Spec border on field-group (for assessment/claim/extension) ---- */
-  .field-group.spec-green { border-left: 3px solid #22c55e; padding-left: 6px; }
-  .field-group.spec-yellow { border-left: 3px solid #eab308; padding-left: 6px; }
-  .field-group.spec-gray { border-left: 3px solid #d1d5db; padding-left: 6px; }
-  .field-group.spec-red { border-left: 3px solid #ef4444; padding-left: 6px; }
-
-  /* ---- Three-column layout ---- */
-  .comparison-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
-  .authored-panel { display: none; }
-  .authored-panel.visible { display: block; }
-  .authored-panel textarea { min-height: 80px; font-size: 14px; }
-
-  /* ---- Per-question notes ---- */
-  .q-note-toggle {
-    display: inline-block; font-size: 11px; color: #3b82f6; cursor: pointer;
-    margin-top: 2px; font-weight: 600; user-select: none;
-  }
-  .q-note-toggle:hover { text-decoration: underline; }
-  .q-note-area {
-    display: none; margin-top: 4px;
-  }
-  .q-note-area.open { display: block; }
-  .q-note-area textarea {
-    width: 100%; min-height: 60px; font-size: 13px; border: 1px solid #e5e7eb;
-    border-radius: 4px; padding: 10px 12px; font-family: inherit; resize: vertical;
-    background: #fffbeb;
-  }
-  .q-note-area textarea:focus { outline: none; border-color: #3b82f6; background: #fff; }
+  /* Row background colors based on spec tag */
+  tr.spec-row-green td { background: #f0fdf4; }
+  tr.spec-row-yellow td { background: #fefce8; }
+  tr.spec-row-gray td { background: #fff; }
+  tr.spec-row-red td { background: #fef2f2; }
 
   /* ---- Review Notes section ---- */
   .review-notes-section {
@@ -315,15 +335,30 @@
     margin-top: 4px;
   }
 
-  /* ---- Toggle button ---- */
-  .btn-toggle { background: #f59e0b; color: #fff; }
-  .btn-toggle:hover { background: #d97706; }
-  .btn-toggle.active { background: #16a34a; }
+  /* ---- Print ---- */
+  @media print {
+    .header { position: static; box-shadow: none; }
+    .btn, .header-actions, .tab-bar, .history-controls,
+    .compare-output, .btn-compare, .toast, .spec-legend,
+    .verbatim-warning-banner { display: none !important; }
+    body { background: #fff; font-size: 12px; }
+    .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    textarea, input[type="text"], select {
+      border: none !important; background: none !important; box-shadow: none !important;
+      padding: 2px 0 !important; resize: none !important;
+    }
+    .radio-cell .radio-label { display: none; }
+    .radio-cell input[type="radio"]:checked + .radio-label {
+      display: block; background: none; border: 1px solid #000; font-size: 10px;
+    }
+    .rubric-table { font-size: 11px; }
+    .score-summary { background: #fff; border: 1px solid #000; }
+    .main { padding: 10px; }
+  }
 
   /* ---- Responsive ---- */
   @media (max-width: 1100px) {
-    .comparison-grid { grid-template-columns: 1fr; }
-    .comparison-grid.three-col { grid-template-columns: 1fr; }
+    .comparison-table { font-size: 13px; }
   }
 </style>
 </head>
@@ -335,7 +370,6 @@
     <h1>Activity Draft Review Tool <span id="unsavedDot" class="unsaved-dot hidden" title="Unsaved changes"></span></h1>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="newReview()">New Review</button>
-      <button class="btn btn-toggle" id="toggleAuthoredBtn" onclick="toggleAuthoredColumn()">Show Authored Comparison</button>
       <button class="btn btn-compare" onclick="runComparison()">Compare Verbatim</button>
       <button class="btn btn-primary" id="saveBtn" onclick="saveReview()">Save Review</button>
     </div>
@@ -386,126 +420,69 @@
     <span class="spec-legend-item"><span class="spec-legend-swatch" style="background:#ef4444;"></span> Specified verbatim but modified</span>
   </div>
 
-  <!-- Comparison Panels -->
-  <div class="comparison-grid" id="comparisonGrid">
-    <!-- Left: Module Plan -->
-    <div class="panel">
-      <h2>Module Plan Specification <span class="badge badge-plan">PLAN</span></h2>
-      <div class="field-group">
-        <label for="planTTVerbatim">Target Task Verbatim</label>
-        <textarea id="planTTVerbatim" class="tall" placeholder="Paste the target task exactly as written in the plan..." oninput="markDirty()"></textarea>
+  <!-- Section 1: Module Plan Summary (collapsible) -->
+  <details class="plan-summary" id="planSummary" open>
+    <summary>Module Plan Specification <span class="badge badge-plan" style="display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle;background:#dbeafe;color:#1e40af;">PLAN</span></summary>
+    <div class="plan-body">
+      <div class="plan-field">
+        <div class="plan-field-label">Target Task Verbatim</div>
+        <div class="plan-field-value" id="planTTVerbatimDisplay"></div>
       </div>
-      <div class="field-group">
-        <label for="planTTOutline">Target Task Outline</label>
-        <textarea id="planTTOutline" placeholder="Key elements the target task should address..." oninput="markDirty()"></textarea>
+      <div class="plan-field">
+        <div class="plan-field-label">Target Task Outline</div>
+        <div class="plan-field-value" id="planTTOutlineDisplay"></div>
       </div>
-      <div class="field-group">
-        <label for="planTTFormat">TT Format / Type</label>
-        <select id="planTTFormat" onchange="markDirty()">
-          <option value="">--</option>
-          <option>QuickWrite ELEM</option>
-          <option>QuickWrite MS</option>
-          <option>ShortWrite</option>
-          <option>MC</option>
-          <option>MC Pair</option>
-          <option>Highlight + Write</option>
-          <option>Other</option>
-        </select>
+      <div class="plan-field">
+        <div class="plan-field-label">TT Format / Type</div>
+        <div class="plan-field-value" id="planTTFormatDisplay"></div>
       </div>
-      <div class="field-group">
-        <label for="planDQVerbatim">Driving Questions (Verbatim)</label>
-        <textarea id="planDQVerbatim" class="tall" placeholder="Paste driving questions exactly as specified in the plan, one per line..." oninput="markDirty()"></textarea>
+      <div class="plan-field">
+        <div class="plan-field-label">Driving Questions (Verbatim)</div>
+        <div class="plan-field-value" id="planDQVerbatimDisplay"></div>
       </div>
-      <div class="field-group">
-        <label for="planDQOutline">Driving Questions (Outline)</label>
-        <textarea id="planDQOutline" class="tall" placeholder="Outline of analytical moves, comprehension targets, etc." oninput="markDirty()"></textarea>
+      <div class="plan-field">
+        <div class="plan-field-label">Driving Questions (Outline)</div>
+        <div class="plan-field-value" id="planDQOutlineDisplay"></div>
       </div>
-      <div class="field-group">
-        <label for="planNotes">Planning Notes</label>
-        <textarea id="planNotes" class="tall" placeholder="Any special instructions, curriculum-specific rules, etc." oninput="markDirty()"></textarea>
+      <div class="plan-field">
+        <div class="plan-field-label">Planning Notes</div>
+        <div class="plan-field-value" id="planNotesDisplay"></div>
       </div>
     </div>
+  </details>
 
-    <!-- Middle: 25-26 Authored Version (hidden by default) -->
-    <div class="panel authored-panel" id="authoredPanel">
-      <h2>25-26 Authored Version <span class="badge" style="background:#fef3c7;color:#92400e;">AUTHORED</span></h2>
-      <div class="field-group">
-        <label for="authoredAssessment">Assessment Question</label>
-        <textarea id="authoredAssessment" placeholder="Paste authored assessment question..." oninput="markDirty()"></textarea>
-      </div>
-      <div class="field-group">
-        <label for="authoredClaim">Claim Question</label>
-        <textarea id="authoredClaim" placeholder="Paste authored claim question..." oninput="markDirty()"></textarea>
-      </div>
-      <div class="field-group">
-        <label>Driving Questions</label>
-        <div id="authoredDQs"></div>
-      </div>
-      <div class="field-group">
-        <label for="authoredExtension">Extension Question</label>
-        <textarea id="authoredExtension" placeholder="Paste authored extension question..." oninput="markDirty()"></textarea>
-      </div>
-    </div>
+  <!-- Hidden fields to hold plan data for gatherData/restoreData -->
+  <input type="hidden" id="planTTVerbatim">
+  <input type="hidden" id="planTTOutline">
+  <input type="hidden" id="planTTFormat">
+  <input type="hidden" id="planDQVerbatim">
+  <input type="hidden" id="planDQOutline">
+  <input type="hidden" id="planNotes">
 
-    <!-- Right: Draft Output -->
-    <div class="panel">
-      <h2>Draft Output <span class="badge badge-draft">DRAFT</span></h2>
-      <div class="field-group" id="draftAssessmentGroup">
-        <label for="draftAssessment">Assessment Question (QuickWrite / ShortWrite)</label>
-        <div class="field-flex">
-          <textarea id="draftAssessment" class="tall" style="flex:1;" placeholder="The final assessment question from the draft..." oninput="markDirty()"></textarea>
-          <select class="spec-tag-select" id="specTagAssessment" onchange="applySpecTag('draftAssessmentGroup', this.value);markDirty();" title="Spec level">
-            <option value="">--</option>
-            <option value="green">🟩</option>
-            <option value="yellow">🟨</option>
-            <option value="gray">⬜</option>
-            <option value="red">⚠️</option>
-          </select>
-        </div>
-        <span class="q-note-toggle" onclick="toggleQNote('noteAssessment')">+ Add note</span>
-        <div class="q-note-area" id="noteAssessmentArea">
-          <textarea id="noteAssessment" placeholder="Note on assessment question..." oninput="markDirty()"></textarea>
-        </div>
-      </div>
-      <div class="field-group" id="draftClaimGroup">
-        <label for="draftClaim">Claim Question</label>
-        <div class="field-flex">
-          <textarea id="draftClaim" style="flex:1;" placeholder="The claim question from the draft..." oninput="markDirty()"></textarea>
-          <select class="spec-tag-select" id="specTagClaim" onchange="applySpecTag('draftClaimGroup', this.value);markDirty();" title="Spec level">
-            <option value="">--</option>
-            <option value="green">🟩</option>
-            <option value="yellow">🟨</option>
-            <option value="gray">⬜</option>
-            <option value="red">⚠️</option>
-          </select>
-        </div>
-        <span class="q-note-toggle" onclick="toggleQNote('noteClaim')">+ Add note</span>
-        <div class="q-note-area" id="noteClaimArea">
-          <textarea id="noteClaim" placeholder="Note on claim question..." oninput="markDirty()"></textarea>
-        </div>
-      </div>
-      <div class="field-group">
-        <label>Driving Questions</label>
-        <div id="draftDQs"></div>
-      </div>
-      <div class="field-group" id="draftExtensionGroup">
-        <label for="draftExtension">Extension Question</label>
-        <div class="field-flex">
-          <textarea id="draftExtension" style="flex:1;" placeholder="Extension question from the draft..." oninput="markDirty()"></textarea>
-          <select class="spec-tag-select" id="specTagExtension" onchange="applySpecTag('draftExtensionGroup', this.value);markDirty();" title="Spec level">
-            <option value="">--</option>
-            <option value="green">🟩</option>
-            <option value="yellow">🟨</option>
-            <option value="gray">⬜</option>
-            <option value="red">⚠️</option>
-          </select>
-        </div>
-        <span class="q-note-toggle" onclick="toggleQNote('noteExtension')">+ Add note</span>
-        <div class="q-note-area" id="noteExtensionArea">
-          <textarea id="noteExtension" placeholder="Note on extension question..." oninput="markDirty()"></textarea>
-        </div>
-      </div>
-    </div>
+  <!-- Section 2: Question-by-Question Comparison Table -->
+  <div class="panel" style="padding:16px;">
+    <h2>Question-by-Question Comparison</h2>
+    <table class="comparison-table" id="comparisonTable">
+      <colgroup>
+        <col style="width:60px;">
+        <col style="width:55px;">
+        <col style="width:38%;">
+        <col style="width:38%;">
+        <col style="width:140px;">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Spec</th>
+          <th>25-26 Authored</th>
+          <th>Claude Draft</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="comparisonBody">
+        <!-- Built by JS -->
+      </tbody>
+    </table>
   </div>
 
   <!-- Comparison Output -->
@@ -538,10 +515,10 @@
         <thead>
           <tr>
             <th>Dimension</th>
-            <th>1 — Missing</th>
-            <th>2 — Weak</th>
-            <th>3 — Adequate</th>
-            <th>4 — Strong</th>
+            <th>1 -- Missing</th>
+            <th>2 -- Weak</th>
+            <th>3 -- Adequate</th>
+            <th>4 -- Strong</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -573,10 +550,10 @@
         <thead>
           <tr>
             <th>Dimension</th>
-            <th>1 — Missing</th>
-            <th>2 — Weak</th>
-            <th>3 — Adequate</th>
-            <th>4 — Strong</th>
+            <th>1 -- Missing</th>
+            <th>2 -- Weak</th>
+            <th>3 -- Adequate</th>
+            <th>4 -- Strong</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -689,14 +666,30 @@
 (function() {
   "use strict";
 
-  const STORAGE_KEY = "draftReviewHistory";
-  const AUTOSAVE_KEY = "draftReviewAutosave";
-  const NUM_DQS = 8;
-  const RUBRIC_NAMES_A = ["r_verbfid", "r_speccomp"];
-  const RUBRIC_NAMES_B = ["r_rigor", "r_scaffold", "r_assess", "r_coverage", "r_gradelevel"];
+  var STORAGE_KEY = "draftReviewHistory";
+  var AUTOSAVE_KEY = "draftReviewAutosave";
+  var NUM_DQS = 8;
+  var RUBRIC_NAMES_A = ["r_verbfid", "r_speccomp"];
+  var RUBRIC_NAMES_B = ["r_rigor", "r_scaffold", "r_assess", "r_coverage", "r_gradelevel"];
+  var NOTE_NAMES = ["n_verbfid", "n_speccomp", "n_rigor", "n_scaffold", "n_assess", "n_coverage", "n_gradelevel"];
+
+  // Row definitions for the comparison table
+  var TABLE_ROWS = [
+    { key: "q1", label: "Q1" },
+    { key: "q2", label: "Q2" },
+    { key: "q3", label: "Q3" },
+    { key: "q4", label: "Q4" },
+    { key: "q5", label: "Q5" },
+    { key: "q6", label: "Q6" },
+    { key: "q7", label: "Q7" },
+    { key: "q8", label: "Q8" },
+    { key: "claim", label: "Claim" },
+    { key: "assessment", label: "Assessment" },
+    { key: "extension", label: "Extension" }
+  ];
 
   // ---- Pre-loaded lesson data ----
-  const LESSON_DATA = {
+  var LESSON_DATA = {
     "AM_CK3_XX_G4_7.0_1": {
       lessonId: "AM_CK3_XX_G4_7.0_1_v1",
       grade: "G4",
@@ -707,8 +700,6 @@
       planDQVerbatim: "- What does Caleb think his father means when he calls him extraordinary?\n- How does Caleb feel about being ordinary?",
       planDQOutline: "- 1 multiple choice vocabulary in context question (word: extraordinary)\n- 4 additional driving questions (five total)",
       planNotes: "",
-      draftAssessment: "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation.",
-      draftClaim: "In one sentence, write a claim that answers the following question: How is Caleb characterized in these excerpts?",
       draftDQs: [
         "MC (vocab): Dad calls Caleb \"extraordinary.\" What does \"extraordinary\" mean as Dad uses it here? \u2192 A. Very ordinary and plain, B. Strange and confusing, C. Remarkable and exceptional, D. Loud and attention-seeking (Answer: C)",
         "What does Caleb think his father means when he calls him extraordinary?",
@@ -717,7 +708,21 @@
         "What does Caleb's thought \"Who's ordinary now?\" show about who he is?",
         "", "", ""
       ],
-      draftExtension: "Caleb has pictures of the Grand Canyon, the Milky Way, Victoria Falls, and Table Mountain taped to his bunk. What do you think these pictures tell us about who Caleb wants to become?"
+      draftClaim: "In one sentence, write a claim that answers the following question: How is Caleb characterized in these excerpts?",
+      draftAssessment: "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation.",
+      draftExtension: "Caleb has pictures of the Grand Canyon, the Milky Way, Victoria Falls, and Table Mountain taped to his bunk. What do you think these pictures tell us about who Caleb wants to become?",
+      authoredDQs: [
+        "MC (vocab): \"Read the sentences below... What does extraordinary mean?\" \u2192 Very special",
+        "What does Caleb think his father means when he calls him extraordinary?",
+        "How does Caleb feel about being ordinary?",
+        "Why does Caleb want the fireworks so badly?",
+        "Highlight: One detail from paragraphs 28-38 showing Caleb's reaction when Cory sells him the fireworks",
+        "", "", ""
+      ],
+      authoredClaim: "Write a claim answering: How is Caleb characterized in these excerpts? Make sure your claim names a specific character trait.",
+      authoredAssessment: "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation.",
+      authoredExtension: "What do you think Caleb will do next to prove he's not ordinary?",
+      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" }
     },
     "AM_CK3_XX_G4_7.0_2": {
       lessonId: "AM_CK3_XX_G4_7.0_2_v1",
@@ -729,8 +734,6 @@
       planDQVerbatim: "- How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?\n- What happens to Caleb while the boys are doing their chores?",
       planDQOutline: "- 1 MC vocab in context question (word: transgressions)\n- A question about how Caleb/Bobby Gene feel at the end of the chapter",
       planNotes: "- Because this chapter is long, all driving questions should give students a specific paragraph range (2-5 paragraphs) to look at\n- 5 total driving questions",
-      draftAssessment: "How do Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter and why? Write a response using your claim, one piece of evidence from the text, and an explanation of how that evidence supports your claim.",
-      draftClaim: "In one sentence, write a claim: How does Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter, and why? Include both the change and a reason.",
       draftDQs: [
         "MC (vocab): In paragraph 1, what does \"transgressions\" mean as it is used in this sentence? \u2192 A. Punishments, B. Arguments, C. Bad choices or wrongdoings, D. Chores (Answer: C)",
         "Go back to paragraphs 13-16. How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?",
@@ -739,7 +742,21 @@
         "Re-read paragraphs 56-59. How do Caleb and Bobby Gene feel about Cory by the end of the chapter?",
         "", "", ""
       ],
-      draftExtension: "Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?"
+      draftClaim: "In one sentence, write a claim: How does Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter, and why? Include both the change and a reason.",
+      draftAssessment: "How do Bobby Gene and Caleb\u2019s relationship with Cory change from the beginning to the end of the chapter and why? Write a response using your claim, one piece of evidence from the text, and an explanation of how that evidence supports your claim.",
+      draftExtension: "Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?",
+      authoredDQs: [
+        "MC (vocab): \"Read the following sentences from paragraph 1... What does transgressions mean?\" \u2192 Bad choices",
+        "How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter? (\u00b613-16)",
+        "What happens to Caleb while the boys are doing their chores? (\u00b648-50)",
+        "How do Bobby Gene and Cory react when Caleb falls? (\u00b652-55)",
+        "How do Caleb and Bobby Gene feel about Cory by the end of the chapter? (\u00b657-59)",
+        "", "", ""
+      ],
+      authoredClaim: "",
+      authoredAssessment: "",
+      authoredExtension: "Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?",
+      specTags: { dq1: "yellow", dq2: "green", dq3: "green", dq4: "gray", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" }
     },
     "SV_MYP_XX_G8_4.0_5": {
       lessonId: "SV_MYP_XX_G8_4.0_5_v1",
@@ -751,8 +768,6 @@
       planDQVerbatim: "- Why does Miss Kinnian tell Charlie not to correct his punctuation?\n- Why are Doctors Nemur and Strauss arguing?",
       planDQOutline: "",
       planNotes: "5 driving questions, all open response (lcq or tdq)\nQuestions must cover the full breadth of the excerpt\nQuestions should be in sequential order",
-      draftAssessment: "MC: Which statement best expresses the central idea of this section of \"Flowers for Algernon\" (paragraphs 58-120)?\n\nSummary: Write a 2-3 sentence summary of this excerpt from \"Flowers for Algernon\" (paragraphs 58-120).",
-      draftClaim: "",
       draftDQs: [
         "Why does Miss Kinnian tell Charlie not to correct his old Progress Reports?",
         "What happens to Charlie at the party with Joe Carp and Frank Reilly?",
@@ -761,7 +776,21 @@
         "What does Miss Kinnian tell Charlie during their dinner about his learning?",
         "", "", ""
       ],
-      draftExtension: "Charlie says finding out people laughed at him is \"a good thing.\" Do you agree with him \u2014 can a painful realization be a good thing?"
+      draftClaim: "",
+      draftAssessment: "MC: Which statement best expresses the central idea of this section of \"Flowers for Algernon\" (paragraphs 58-120)?\n\nSummary: Write a 2-3 sentence summary of this excerpt from \"Flowers for Algernon\" (paragraphs 58-120).",
+      draftExtension: "Charlie says finding out people laughed at him is \"a good thing.\" Do you agree with him \u2014 can a painful realization be a good thing?",
+      authoredDQs: [
+        "Why does Miss Kinnian tell Charlie not to correct his punctuation?",
+        "What does Charlie realize about his coworkers at the party?",
+        "How do people at the factory treat Charlie after he becomes smarter?",
+        "Why are Doctors Nemur and Strauss arguing?",
+        "What does Miss Kinnian tell Charlie about his progress during their dinner?",
+        "", "", ""
+      ],
+      authoredClaim: "",
+      authoredAssessment: "MC: \"At the party, Charlie finally understands that his coworkers have been making fun of him. What does Charlie's reaction to this realization reveal about him?\"\n\nSummary: \"Write a 2-3 sentence summary of this excerpt from Flowers for Algernon.\"",
+      authoredExtension: "Charlie still carries his rabbit's foot even though he's becoming more intelligent. Why do you think he holds onto it?",
+      specTags: { dq1: "red", dq2: "gray", dq3: "green", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "", assessment: "gray", extension: "gray" }
     },
     "SV_MYP_XX_G8_4.0_11": {
       lessonId: "SV_MYP_XX_G8_4.0_11_v1",
@@ -773,8 +802,6 @@
       planDQVerbatim: "",
       planDQOutline: "- Mix of highlight and tdq questions\n- Should trace 2-3 key moments of the story (maybe from beginning, middle, end)\n- Focus on what Charlie does/says (highlight) and what this reveals about his humanity (tdq)",
       planNotes: "",
-      draftAssessment: "How does Charlie\u2019s experience with increased intelligence develop the theme of what it means to be truly human? Respond in a paragraph that includes your claim, at least two pieces of evidence from the text, and an explanation of each.",
-      draftClaim: "Consider the evidence you gathered. In one sentence, write a claim answering: How does Charlie\u2019s experience develop the theme of what it means to be truly human?",
       draftDQs: [
         "According to paragraphs 78-80, how does Charlie react when he realizes people are laughing at him?",
         "Highlight one detail from paragraphs 149-151 that shows what Charlie does when he sees the dishwasher boy being mocked.",
@@ -783,91 +810,124 @@
         "Compare how others treat Charlie in Excerpt 1 with how Joe and Frank treat him in Excerpt 3. What has changed?",
         "", "", ""
       ],
-      draftExtension: "In his final report, Charlie writes that \"its easy to make frends if you let pepul laff at you.\" Do you think Charlie truly believes this, or has his understanding of friendship changed?"
+      draftClaim: "Consider the evidence you gathered. In one sentence, write a claim answering: How does Charlie\u2019s experience develop the theme of what it means to be truly human?",
+      draftAssessment: "How does Charlie\u2019s experience with increased intelligence develop the theme of what it means to be truly human? Respond in a paragraph that includes your claim, at least two pieces of evidence from the text, and an explanation of each.",
+      draftExtension: "In his final report, Charlie writes that \"its easy to make frends if you let pepul laff at you.\" Do you think Charlie truly believes this, or has his understanding of friendship changed?",
+      authoredDQs: ["", "", "", "", "", "", "", ""],
+      authoredClaim: "",
+      authoredAssessment: "",
+      authoredExtension: "",
+      specTags: { dq1: "gray", dq2: "yellow", dq3: "yellow", dq4: "yellow", dq5: "yellow", dq6: "", dq7: "", dq8: "", claim: "green", assessment: "green", extension: "gray" }
     }
   };
 
+  var isDirty = false;
+  var currentEditId = null;
+  var historySortCol = "date";
+  var historySortAsc = false;
+
+  // ---- Build the comparison table ----
+  function buildComparisonTable() {
+    var tbody = document.getElementById("comparisonBody");
+    var html = "";
+    for (var i = 0; i < TABLE_ROWS.length; i++) {
+      var row = TABLE_ROWS[i];
+      html += '<tr id="row_' + row.key + '">' +
+        '<td class="row-label">' + row.label + '</td>' +
+        '<td class="spec-cell">' +
+          '<select id="spec_' + row.key + '" onchange="applyRowSpec(\'' + row.key + '\');markDirty();" title="Spec level">' +
+            '<option value="">--</option>' +
+            '<option value="green">\uD83D\uDFE9</option>' +
+            '<option value="yellow">\uD83D\uDFE8</option>' +
+            '<option value="gray">\u2B1C</option>' +
+            '<option value="red">\u26A0\uFE0F</option>' +
+          '</select>' +
+        '</td>' +
+        '<td><textarea id="authored_' + row.key + '" placeholder="25-26 authored version..." oninput="markDirty()"></textarea></td>' +
+        '<td><textarea id="draft_' + row.key + '" placeholder="Claude draft..." oninput="markDirty()"></textarea></td>' +
+        '<td class="note-cell"><textarea id="note_' + row.key + '" placeholder="Notes..." oninput="markDirty()"></textarea></td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  // ---- Apply row spec color ----
+  window.applyRowSpec = function(key) {
+    var row = document.getElementById("row_" + key);
+    var sel = document.getElementById("spec_" + key);
+    if (!row || !sel) return;
+    row.classList.remove("spec-row-green", "spec-row-yellow", "spec-row-gray", "spec-row-red");
+    if (sel.value) row.classList.add("spec-row-" + sel.value);
+  };
+
+  // ---- Populate plan summary display ----
+  function setPlanDisplay(id, value) {
+    var el = document.getElementById(id + "Display");
+    if (el) el.textContent = value || "";
+    // Also set hidden input
+    var hidden = document.getElementById(id);
+    if (hidden) hidden.value = value || "";
+  }
+
+  // ---- Load lesson ----
   window.loadLesson = function(key) {
     if (!key) return;
     var data = LESSON_DATA[key];
     if (!data) return;
 
     // Clear form without confirmation dialog
-    currentEditId = null;
-    document.getElementById("lessonId").value = "";
-    document.getElementById("gradeSelect").value = "";
-    document.getElementById("curriculumSelect").value = "";
-    ["planTTVerbatim","planTTOutline","planDQVerbatim","planDQOutline","planNotes",
-     "draftAssessment","draftClaim","draftExtension"].forEach(function(id) {
-      document.getElementById(id).value = "";
-    });
-    document.getElementById("planTTFormat").value = "";
-    for (var i = 1; i <= NUM_DQS; i++) {
-      document.getElementById("draftDQ" + i).value = "";
-      document.getElementById("draftDQV" + i).checked = false;
-      document.getElementById("specTagDQ" + i).value = "";
-      applySpecTag("draftDQRow" + i, "");
-      document.getElementById("noteDQ" + i).value = "";
-      document.getElementById("authoredDQ" + i).value = "";
-    }
-    ["Assessment","Claim","Extension"].forEach(function(k) {
-      document.getElementById("specTag" + k).value = "";
-      document.getElementById("note" + k).value = "";
-    });
-    applySpecTag("draftAssessmentGroup", "");
-    applySpecTag("draftClaimGroup", "");
-    applySpecTag("draftExtensionGroup", "");
-    ["authoredAssessment","authoredClaim","authoredExtension"].forEach(function(id) {
-      document.getElementById(id).value = "";
-    });
-    document.getElementById("keyObservations").value = "";
-    document.getElementById("skillRecommendations").value = "";
-    document.querySelectorAll(".q-note-area.open").forEach(function(el) { el.classList.remove("open"); });
-    document.querySelectorAll(".q-note-toggle").forEach(function(el) { el.textContent = "+ Add note"; });
-    RUBRIC_NAMES_A.concat(RUBRIC_NAMES_B).forEach(function(name) {
-      document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) { r.checked = false; });
-    });
-    NOTE_NAMES.forEach(function(name) {
-      var el = document.querySelector('input[name="' + name + '"]');
-      if (el) el.value = "";
-    });
-    document.getElementById("comparePanel").style.display = "none";
-    updateScores();
+    clearForm();
 
-    // Populate fields from lesson data
+    // Populate header fields
     document.getElementById("lessonId").value = data.lessonId || "";
     document.getElementById("gradeSelect").value = data.grade || "";
     document.getElementById("curriculumSelect").value = data.curriculum || "";
     document.getElementById("reviewDate").value = "2026-03-17";
-    document.getElementById("planTTVerbatim").value = data.planTTVerbatim || "";
-    document.getElementById("planTTOutline").value = data.planTTOutline || "";
-    document.getElementById("planTTFormat").value = data.planTTFormat || "";
-    document.getElementById("planDQVerbatim").value = data.planDQVerbatim || "";
-    document.getElementById("planDQOutline").value = data.planDQOutline || "";
-    document.getElementById("planNotes").value = data.planNotes || "";
-    document.getElementById("draftAssessment").value = data.draftAssessment || "";
-    document.getElementById("draftClaim").value = data.draftClaim || "";
-    document.getElementById("draftExtension").value = data.draftExtension || "";
 
-    for (var j = 1; j <= NUM_DQS; j++) {
-      document.getElementById("draftDQ" + j).value = (data.draftDQs && data.draftDQs[j - 1]) || "";
+    // Populate plan summary
+    setPlanDisplay("planTTVerbatim", data.planTTVerbatim);
+    setPlanDisplay("planTTOutline", data.planTTOutline);
+    setPlanDisplay("planTTFormat", data.planTTFormat);
+    setPlanDisplay("planDQVerbatim", data.planDQVerbatim);
+    setPlanDisplay("planDQOutline", data.planDQOutline);
+    setPlanDisplay("planNotes", data.planNotes);
+
+    // Populate comparison table - DQs (q1-q8)
+    for (var i = 0; i < NUM_DQS; i++) {
+      var qKey = "q" + (i + 1);
+      document.getElementById("draft_" + qKey).value = (data.draftDQs && data.draftDQs[i]) || "";
+      document.getElementById("authored_" + qKey).value = (data.authoredDQs && data.authoredDQs[i]) || "";
+    }
+
+    // Populate claim, assessment, extension
+    document.getElementById("draft_claim").value = data.draftClaim || "";
+    document.getElementById("draft_assessment").value = data.draftAssessment || "";
+    document.getElementById("draft_extension").value = data.draftExtension || "";
+    document.getElementById("authored_claim").value = data.authoredClaim || "";
+    document.getElementById("authored_assessment").value = data.authoredAssessment || "";
+    document.getElementById("authored_extension").value = data.authoredExtension || "";
+
+    // Apply spec tags
+    if (data.specTags) {
+      for (var tagKey in data.specTags) {
+        if (data.specTags.hasOwnProperty(tagKey)) {
+          var sel = document.getElementById("spec_" + tagKey);
+          if (sel) {
+            sel.value = data.specTags[tagKey] || "";
+            applyRowSpec(tagKey);
+          }
+        }
+      }
     }
 
     markDirty();
     showToast("Loaded " + data.lessonId);
   };
-  const NOTE_NAMES = ["n_verbfid", "n_speccomp", "n_rigor", "n_scaffold", "n_assess", "n_coverage", "n_gradelevel"];
-
-  let isDirty = false;
-  let currentEditId = null;
-  let historySortCol = "date";
-  let historySortAsc = false;
 
   // ---- Init ----
   function init() {
     document.getElementById("reviewDate").value = new Date().toISOString().slice(0, 10);
-    buildDraftDQs();
-    buildAuthoredDQs();
+    buildComparisonTable();
     loadAutosave();
     renderHistory();
     setInterval(autosave, 30000);
@@ -880,38 +940,6 @@
     });
   }
 
-  function buildDraftDQs() {
-    const container = document.getElementById("draftDQs");
-    let html = "";
-    for (let i = 1; i <= NUM_DQS; i++) {
-      html += '<div class="dq-row" id="draftDQRow' + i + '">' +
-        '<label class="dq-label">Q' + i + '</label>' +
-        '<textarea id="draftDQ' + i + '" placeholder="Draft driving question ' + i + '..." oninput="markDirty()"></textarea>' +
-        '<select class="spec-tag-select" id="specTagDQ' + i + '" onchange="applySpecTag(\'draftDQRow' + i + '\', this.value);markDirty();" title="Spec level">' +
-          '<option value="">--</option><option value="green">\u{1F7E9}</option><option value="yellow">\u{1F7E8}</option><option value="gray">\u2B1C</option><option value="red">\u26A0\uFE0F</option>' +
-        '</select>' +
-        '<label class="verbatim-check"><input type="checkbox" id="draftDQV' + i + '" onchange="markDirty()"> Verbatim?</label>' +
-        '</div>' +
-        '<span class="q-note-toggle" onclick="toggleQNote(\'noteDQ' + i + '\')" style="margin-left:34px;">+ Add note</span>' +
-        '<div class="q-note-area" id="noteDQ' + i + 'Area" style="margin-left:34px;margin-bottom:6px;">' +
-          '<textarea id="noteDQ' + i + '" placeholder="Note on Q' + i + '..." oninput="markDirty()"></textarea>' +
-        '</div>';
-    }
-    container.innerHTML = html;
-  }
-
-  function buildAuthoredDQs() {
-    const container = document.getElementById("authoredDQs");
-    let html = "";
-    for (let i = 1; i <= NUM_DQS; i++) {
-      html += '<div class="dq-row">' +
-        '<label class="dq-label">Q' + i + '</label>' +
-        '<textarea id="authoredDQ' + i + '" placeholder="Authored Q' + i + '..." oninput="markDirty()"></textarea>' +
-        '</div>';
-    }
-    container.innerHTML = html;
-  }
-
   // ---- Dirty tracking ----
   window.markDirty = function() {
     isDirty = true;
@@ -922,46 +950,6 @@
     isDirty = false;
     document.getElementById("unsavedDot").classList.add("hidden");
   }
-
-  // ---- Spec tag helpers ----
-  window.applySpecTag = function(rowId, value) {
-    var el = document.getElementById(rowId);
-    if (!el) return;
-    el.classList.remove("spec-green", "spec-yellow", "spec-gray", "spec-red");
-    if (value) el.classList.add("spec-" + value);
-  };
-
-  window.toggleQNote = function(noteId) {
-    var area = document.getElementById(noteId + "Area");
-    if (!area) return;
-    var isOpen = area.classList.contains("open");
-    area.classList.toggle("open");
-    // Update toggle text
-    var toggle = area.previousElementSibling;
-    if (toggle && toggle.classList.contains("q-note-toggle")) {
-      toggle.textContent = isOpen ? "+ Add note" : "- Hide note";
-    }
-  };
-
-  // ---- Authored column toggle ----
-  let authoredVisible = false;
-  window.toggleAuthoredColumn = function() {
-    authoredVisible = !authoredVisible;
-    var panel = document.getElementById("authoredPanel");
-    var grid = document.getElementById("comparisonGrid");
-    var btn = document.getElementById("toggleAuthoredBtn");
-    if (authoredVisible) {
-      panel.classList.add("visible");
-      grid.classList.add("three-col");
-      btn.textContent = "Hide Authored Comparison";
-      btn.classList.add("active");
-    } else {
-      panel.classList.remove("visible");
-      grid.classList.remove("three-col");
-      btn.textContent = "Show Authored Comparison";
-      btn.classList.remove("active");
-    }
-  };
 
   // ---- Tabs ----
   window.switchTab = function(tab) {
@@ -1092,43 +1080,50 @@
     document.querySelectorAll(".verbatim-warning-pulse").forEach(function(el) { el.classList.remove("verbatim-warning-pulse"); });
     document.querySelectorAll(".verbatim-warning-banner").forEach(function(el) { el.remove(); });
 
-    // Target Task
+    // Target Task verbatim vs draft assessment
+    var planTTVal = document.getElementById("planTTVerbatim").value;
+    var draftAssessVal = document.getElementById("draft_assessment").value;
     html += renderComparison(
       "Target Task Verbatim vs. Assessment Question",
-      document.getElementById("planTTVerbatim").value,
-      document.getElementById("draftAssessment").value
+      planTTVal,
+      draftAssessVal
     );
 
     // Check if assessment is tagged as verbatim-modified
-    if (document.getElementById("specTagAssessment").value === "red") {
+    if (document.getElementById("spec_assessment").value === "red") {
       html += '<div class="verbatim-warning-banner">Warning: Assessment question was specified verbatim but has been modified by the draft.</div>';
-      document.getElementById("draftAssessmentGroup").classList.add("verbatim-warning-pulse");
+      var assessRow = document.getElementById("row_assessment");
+      if (assessRow) assessRow.classList.add("verbatim-warning-pulse");
     }
 
-    // Driving Questions
-    var planDQLines = document.getElementById("planDQVerbatim").value.split("\n").filter(function(l) { return l.trim().length > 0; });
+    // Driving Questions: compare planDQVerbatim lines against draft_q* fields
+    var planDQVal = document.getElementById("planDQVerbatim").value;
+    var planDQLines = planDQVal.split("\n").filter(function(l) { return l.trim().length > 0; });
     for (var i = 1; i <= NUM_DQS; i++) {
-      var draftVal = document.getElementById("draftDQ" + i).value;
+      var draftVal = document.getElementById("draft_q" + i).value;
       var planVal = (i <= planDQLines.length) ? planDQLines[i - 1] : "";
       if (draftVal.trim() || planVal.trim()) {
         var label = "Q" + i + ": Plan DQ " + i + " vs. Draft Q" + i;
         html += renderComparison(label, planVal, draftVal);
         // Check if this DQ is tagged as verbatim-modified
-        if (document.getElementById("specTagDQ" + i).value === "red") {
+        if (document.getElementById("spec_q" + i).value === "red") {
           html += '<div class="verbatim-warning-banner">Warning: Q' + i + ' was specified verbatim but has been modified by the draft.</div>';
-          document.getElementById("draftDQRow" + i).classList.add("verbatim-warning-pulse");
+          var qRow = document.getElementById("row_q" + i);
+          if (qRow) qRow.classList.add("verbatim-warning-pulse");
         }
       }
     }
 
     // Check claim and extension for verbatim-modified warnings
-    if (document.getElementById("specTagClaim").value === "red") {
+    if (document.getElementById("spec_claim").value === "red") {
       html += '<div class="verbatim-warning-banner">Warning: Claim question was specified verbatim but has been modified by the draft.</div>';
-      document.getElementById("draftClaimGroup").classList.add("verbatim-warning-pulse");
+      var claimRow = document.getElementById("row_claim");
+      if (claimRow) claimRow.classList.add("verbatim-warning-pulse");
     }
-    if (document.getElementById("specTagExtension").value === "red") {
+    if (document.getElementById("spec_extension").value === "red") {
       html += '<div class="verbatim-warning-banner">Warning: Extension question was specified verbatim but has been modified by the draft.</div>';
-      document.getElementById("draftExtensionGroup").classList.add("verbatim-warning-pulse");
+      var extRow = document.getElementById("row_extension");
+      if (extRow) extRow.classList.add("verbatim-warning-pulse");
     }
 
     if (!html) {
@@ -1154,37 +1149,52 @@
       planDQVerbatim: document.getElementById("planDQVerbatim").value,
       planDQOutline: document.getElementById("planDQOutline").value,
       planNotes: document.getElementById("planNotes").value,
-      draftAssessment: document.getElementById("draftAssessment").value,
-      draftClaim: document.getElementById("draftClaim").value,
-      draftExtension: document.getElementById("draftExtension").value,
-      draftDQs: [],
-      draftDQVerbatim: [],
-      specTags: {},
-      qNotes: {},
-      authoredAssessment: document.getElementById("authoredAssessment").value,
-      authoredClaim: document.getElementById("authoredClaim").value,
-      authoredExtension: document.getElementById("authoredExtension").value,
-      authoredDQs: [],
       keyObservations: document.getElementById("keyObservations").value,
       skillRecommendations: document.getElementById("skillRecommendations").value,
+      // Table data
+      draftDQs: [],
+      authoredDQs: [],
+      specTags: {},
+      qNotes: {},
+      draftClaim: "",
+      draftAssessment: "",
+      draftExtension: "",
+      authoredClaim: "",
+      authoredAssessment: "",
+      authoredExtension: "",
       rubric: {},
       notes: {}
     };
 
-    for (var i = 1; i <= NUM_DQS; i++) {
-      data.draftDQs.push(document.getElementById("draftDQ" + i).value);
-      data.draftDQVerbatim.push(document.getElementById("draftDQV" + i).checked);
-      data.specTags["DQ" + i] = document.getElementById("specTagDQ" + i).value;
-      data.qNotes["DQ" + i] = document.getElementById("noteDQ" + i).value;
-      data.authoredDQs.push(document.getElementById("authoredDQ" + i).value);
-    }
-    data.specTags.assessment = document.getElementById("specTagAssessment").value;
-    data.specTags.claim = document.getElementById("specTagClaim").value;
-    data.specTags.extension = document.getElementById("specTagExtension").value;
-    data.qNotes.assessment = document.getElementById("noteAssessment").value;
-    data.qNotes.claim = document.getElementById("noteClaim").value;
-    data.qNotes.extension = document.getElementById("noteExtension").value;
+    // Gather from comparison table
+    for (var i = 0; i < TABLE_ROWS.length; i++) {
+      var row = TABLE_ROWS[i];
+      var k = row.key;
+      var authored = document.getElementById("authored_" + k).value;
+      var draft = document.getElementById("draft_" + k).value;
+      var spec = document.getElementById("spec_" + k).value;
+      var note = document.getElementById("note_" + k).value;
 
+      data.specTags[k] = spec;
+      data.qNotes[k] = note;
+
+      if (k.match(/^q\d+$/)) {
+        var idx = parseInt(k.substring(1)) - 1;
+        data.draftDQs[idx] = draft;
+        data.authoredDQs[idx] = authored;
+      } else if (k === "claim") {
+        data.draftClaim = draft;
+        data.authoredClaim = authored;
+      } else if (k === "assessment") {
+        data.draftAssessment = draft;
+        data.authoredAssessment = authored;
+      } else if (k === "extension") {
+        data.draftExtension = draft;
+        data.authoredExtension = authored;
+      }
+    }
+
+    // Rubric
     RUBRIC_NAMES_A.concat(RUBRIC_NAMES_B).forEach(function(name) {
       data.rubric[name] = getRadioVal(name);
     });
@@ -1209,52 +1219,51 @@
     document.getElementById("gradeSelect").value = data.grade || "";
     document.getElementById("curriculumSelect").value = data.curriculum || "";
     document.getElementById("reviewDate").value = data.date || "";
-    document.getElementById("planTTVerbatim").value = data.planTTVerbatim || "";
-    document.getElementById("planTTOutline").value = data.planTTOutline || "";
-    document.getElementById("planTTFormat").value = data.planTTFormat || "";
-    document.getElementById("planDQVerbatim").value = data.planDQVerbatim || "";
-    document.getElementById("planDQOutline").value = data.planDQOutline || "";
-    document.getElementById("planNotes").value = data.planNotes || "";
-    document.getElementById("draftAssessment").value = data.draftAssessment || "";
-    document.getElementById("draftClaim").value = data.draftClaim || "";
-    document.getElementById("draftExtension").value = data.draftExtension || "";
 
-    for (var i = 1; i <= NUM_DQS; i++) {
-      document.getElementById("draftDQ" + i).value = (data.draftDQs && data.draftDQs[i - 1]) || "";
-      document.getElementById("draftDQV" + i).checked = (data.draftDQVerbatim && data.draftDQVerbatim[i - 1]) || false;
-      var dqSpec = (data.specTags && data.specTags["DQ" + i]) || "";
-      document.getElementById("specTagDQ" + i).value = dqSpec;
-      applySpecTag("draftDQRow" + i, dqSpec);
-      document.getElementById("noteDQ" + i).value = (data.qNotes && data.qNotes["DQ" + i]) || "";
-      document.getElementById("authoredDQ" + i).value = (data.authoredDQs && data.authoredDQs[i - 1]) || "";
+    // Restore plan summary
+    setPlanDisplay("planTTVerbatim", data.planTTVerbatim);
+    setPlanDisplay("planTTOutline", data.planTTOutline);
+    setPlanDisplay("planTTFormat", data.planTTFormat);
+    setPlanDisplay("planDQVerbatim", data.planDQVerbatim);
+    setPlanDisplay("planDQOutline", data.planDQOutline);
+    setPlanDisplay("planNotes", data.planNotes);
+
+    // Restore comparison table
+    for (var i = 0; i < TABLE_ROWS.length; i++) {
+      var row = TABLE_ROWS[i];
+      var k = row.key;
+
+      // Get authored/draft values
+      var authored = "", draft = "";
+      if (k.match(/^q\d+$/)) {
+        var idx = parseInt(k.substring(1)) - 1;
+        draft = (data.draftDQs && data.draftDQs[idx]) || "";
+        authored = (data.authoredDQs && data.authoredDQs[idx]) || "";
+      } else if (k === "claim") {
+        draft = data.draftClaim || "";
+        authored = data.authoredClaim || "";
+      } else if (k === "assessment") {
+        draft = data.draftAssessment || "";
+        authored = data.authoredAssessment || "";
+      } else if (k === "extension") {
+        draft = data.draftExtension || "";
+        authored = data.authoredExtension || "";
+      }
+
+      document.getElementById("authored_" + k).value = authored;
+      document.getElementById("draft_" + k).value = draft;
+      document.getElementById("note_" + k).value = (data.qNotes && data.qNotes[k]) || "";
+
+      var spec = (data.specTags && data.specTags[k]) || "";
+      document.getElementById("spec_" + k).value = spec;
+      applyRowSpec(k);
     }
-
-    // Restore spec tags for assessment/claim/extension
-    var saSpec = (data.specTags && data.specTags.assessment) || "";
-    document.getElementById("specTagAssessment").value = saSpec;
-    applySpecTag("draftAssessmentGroup", saSpec);
-    var scSpec = (data.specTags && data.specTags.claim) || "";
-    document.getElementById("specTagClaim").value = scSpec;
-    applySpecTag("draftClaimGroup", scSpec);
-    var seSpec = (data.specTags && data.specTags.extension) || "";
-    document.getElementById("specTagExtension").value = seSpec;
-    applySpecTag("draftExtensionGroup", seSpec);
-
-    // Restore per-question notes
-    document.getElementById("noteAssessment").value = (data.qNotes && data.qNotes.assessment) || "";
-    document.getElementById("noteClaim").value = (data.qNotes && data.qNotes.claim) || "";
-    document.getElementById("noteExtension").value = (data.qNotes && data.qNotes.extension) || "";
-
-    // Restore authored column
-    document.getElementById("authoredAssessment").value = data.authoredAssessment || "";
-    document.getElementById("authoredClaim").value = data.authoredClaim || "";
-    document.getElementById("authoredExtension").value = data.authoredExtension || "";
 
     // Restore review notes
     document.getElementById("keyObservations").value = data.keyObservations || "";
     document.getElementById("skillRecommendations").value = data.skillRecommendations || "";
 
-    // Clear all radios first
+    // Restore rubric
     RUBRIC_NAMES_A.concat(RUBRIC_NAMES_B).forEach(function(name) {
       document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) { r.checked = false; });
       if (data.rubric && data.rubric[name] !== null && data.rubric[name] !== undefined) {
@@ -1279,37 +1288,30 @@
     document.getElementById("gradeSelect").value = "";
     document.getElementById("curriculumSelect").value = "";
     document.getElementById("reviewDate").value = new Date().toISOString().slice(0, 10);
-    ["planTTVerbatim","planTTOutline","planDQVerbatim","planDQOutline","planNotes",
-     "draftAssessment","draftClaim","draftExtension"].forEach(function(id) {
-      document.getElementById(id).value = "";
+
+    // Clear plan summary
+    ["planTTVerbatim","planTTOutline","planTTFormat","planDQVerbatim","planDQOutline","planNotes"].forEach(function(id) {
+      var display = document.getElementById(id + "Display");
+      if (display) display.textContent = "";
+      var hidden = document.getElementById(id);
+      if (hidden) hidden.value = "";
     });
-    document.getElementById("planTTFormat").value = "";
-    for (var i = 1; i <= NUM_DQS; i++) {
-      document.getElementById("draftDQ" + i).value = "";
-      document.getElementById("draftDQV" + i).checked = false;
-      document.getElementById("specTagDQ" + i).value = "";
-      applySpecTag("draftDQRow" + i, "");
-      document.getElementById("noteDQ" + i).value = "";
-      document.getElementById("authoredDQ" + i).value = "";
+
+    // Clear comparison table
+    for (var i = 0; i < TABLE_ROWS.length; i++) {
+      var k = TABLE_ROWS[i].key;
+      document.getElementById("authored_" + k).value = "";
+      document.getElementById("draft_" + k).value = "";
+      document.getElementById("note_" + k).value = "";
+      document.getElementById("spec_" + k).value = "";
+      applyRowSpec(k);
     }
-    // Clear spec tags
-    ["Assessment","Claim","Extension"].forEach(function(key) {
-      document.getElementById("specTag" + key).value = "";
-      document.getElementById("note" + key).value = "";
-    });
-    applySpecTag("draftAssessmentGroup", "");
-    applySpecTag("draftClaimGroup", "");
-    applySpecTag("draftExtensionGroup", "");
-    // Clear authored column
-    ["authoredAssessment","authoredClaim","authoredExtension"].forEach(function(id) {
-      document.getElementById(id).value = "";
-    });
+
     // Clear review notes
     document.getElementById("keyObservations").value = "";
     document.getElementById("skillRecommendations").value = "";
-    // Close all open note areas
-    document.querySelectorAll(".q-note-area.open").forEach(function(el) { el.classList.remove("open"); });
-    document.querySelectorAll(".q-note-toggle").forEach(function(el) { el.textContent = "+ Add note"; });
+
+    // Clear rubric
     RUBRIC_NAMES_A.concat(RUBRIC_NAMES_B).forEach(function(name) {
       document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) { r.checked = false; });
     });
@@ -1317,6 +1319,7 @@
       var el = document.querySelector('input[name="' + name + '"]');
       if (el) el.value = "";
     });
+
     document.getElementById("comparePanel").style.display = "none";
     updateScores();
     clearDirty();
@@ -1470,11 +1473,14 @@
       "Question Rigor","Scaffolding Arc","Assessment Quality","Coverage","Grade-Level Appropriateness",
       "Note: Verbatim Fidelity","Note: Specification Compliance",
       "Note: Question Rigor","Note: Scaffolding Arc","Note: Assessment Quality","Note: Coverage","Note: Grade-Level",
-      "Key Observations","Skill Recommendations",
-      "Spec: Assessment","Spec: Claim","Spec: Extension"];
-    for (var qi = 1; qi <= NUM_DQS; qi++) { headers.push("Spec: Q" + qi); }
-    for (var qi = 1; qi <= NUM_DQS; qi++) { headers.push("Q-Note: Q" + qi); }
-    headers.push("Q-Note: Assessment","Q-Note: Claim","Q-Note: Extension");
+      "Key Observations","Skill Recommendations"];
+    // Spec tags and notes for each table row
+    for (var ri = 0; ri < TABLE_ROWS.length; ri++) {
+      headers.push("Spec: " + TABLE_ROWS[ri].label);
+    }
+    for (var ri = 0; ri < TABLE_ROWS.length; ri++) {
+      headers.push("Q-Note: " + TABLE_ROWS[ri].label);
+    }
     var rows = [headers.join(",")];
     history.forEach(function(h) {
       var r = h.rubric || {};
@@ -1496,14 +1502,14 @@
         '"' + (n.n_coverage || "").replace(/"/g, '""') + '"',
         '"' + (n.n_gradelevel || "").replace(/"/g, '""') + '"',
         '"' + (h.keyObservations || "").replace(/"/g, '""') + '"',
-        '"' + (h.skillRecommendations || "").replace(/"/g, '""') + '"',
-        st.assessment || "", st.claim || "", st.extension || ""
+        '"' + (h.skillRecommendations || "").replace(/"/g, '""') + '"'
       ];
-      for (var qi = 1; qi <= NUM_DQS; qi++) { row.push(st["DQ" + qi] || ""); }
-      for (var qi = 1; qi <= NUM_DQS; qi++) { row.push('"' + (qn["DQ" + qi] || "").replace(/"/g, '""') + '"'); }
-      row.push('"' + (qn.assessment || "").replace(/"/g, '""') + '"');
-      row.push('"' + (qn.claim || "").replace(/"/g, '""') + '"');
-      row.push('"' + (qn.extension || "").replace(/"/g, '""') + '"');
+      for (var ri = 0; ri < TABLE_ROWS.length; ri++) {
+        row.push(st[TABLE_ROWS[ri].key] || "");
+      }
+      for (var ri = 0; ri < TABLE_ROWS.length; ri++) {
+        row.push('"' + (qn[TABLE_ROWS[ri].key] || "").replace(/"/g, '""') + '"');
+      }
       rows.push(row.join(","));
     });
     var blob = new Blob([rows.join("\n")], { type: "text/csv" });
