@@ -322,9 +322,13 @@
 
   /* Row background colors based on spec tag */
   tr.spec-row-green td { background: #f0fdf4; }
+  tr.spec-row-green td:first-child { border-left: 3px solid #22c55e; }
   tr.spec-row-yellow td { background: #fefce8; }
-  tr.spec-row-gray td { background: #fff; }
+  tr.spec-row-yellow td:first-child { border-left: 3px solid #eab308; }
+  tr.spec-row-gray td { background: #f8f9fa; }
+  tr.spec-row-gray td:first-child { border-left: 3px solid #9ca3af; }
   tr.spec-row-red td { background: #fef2f2; }
+  tr.spec-row-red td:first-child { border-left: 3px solid #ef4444; }
 
   /* ---- Review Notes section ---- */
   .review-notes-section {
@@ -875,7 +879,7 @@
       authoredClaim: "",
       authoredAssessment: "How does the concept of aret\u00ea help you better understand the characters of The Odyssey, particularly the hero Odysseus? Defend your reasoning by citing and explaining one example from the text.\n\nRespond in the form of a paragraph that includes a topic statement, evidence, and elaboration.",
       authoredExtension: "Does Odysseus' initial reluctance to leave his family and go to war make him any less dutiful or honorable? Explain your answer.",
-      specTags: { dq1: "gray", dq2: "gray", dq3: "gray", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "yellow", extension: "gray" },
+      specTags: { dq1: "gray", dq2: "gray", dq3: "gray", dq4: "gray", dq5: "gray", dq6: "", dq7: "", dq8: "", claim: "yellow", assessment: "red", extension: "gray" },
       authoredTypes: { q1: "TDQ", q2: "TDQ", q3: "TDQ", q4: "MC", q5: "TDQ", q6: "", q7: "", q8: "", claim: "", assessment: "QuickWrite", extension: "Extension" },
       draftTypes: { q1: "MC", q2: "LCQ", q3: "TDQ", q4: "Highlight", q5: "TDQ", q6: "", q7: "", q8: "", claim: "Claim", assessment: "QuickWrite", extension: "Extension" }
     },
