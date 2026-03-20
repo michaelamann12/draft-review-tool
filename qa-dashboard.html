@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Test Dashboard — 5 Lessons x 3 Versions</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+  background: #f0f2f5; color: #1a1a2e; line-height: 1.5; font-size: 14px;
+}
+
+/* Header */
+.header {
+  background: #fff; border-bottom: 1px solid #d0d5dd; padding: 14px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06); position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header h1 { font-size: 20px; font-weight: 700; color: #1e3a5f; }
+.header-meta { font-size: 12px; color: #667085; }
+
+/* Summary Cards */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px; padding: 20px 24px;
+}
+.summary-card {
+  background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
+  padding: 16px 20px; cursor: pointer; transition: box-shadow .15s, border-color .15s;
+}
+.summary-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); border-color: #3b82f6; }
+.summary-card.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+.card-title { font-size: 15px; font-weight: 700; color: #1e3a5f; margin-bottom: 4px; }
+.card-subtitle { font-size: 12px; color: #667085; margin-bottom: 12px; }
+.card-versions { display: flex; gap: 8px; }
+.version-pill {
+  flex: 1; text-align: center; padding: 6px 4px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; border: 1px solid #e5e7eb;
+}
+.version-pill.pass { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.version-pill.partial { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+.version-pill.fail { background: #fecaca; color: #991b1b; border-color: #fca5a5; }
+
+/* Tabs for A/B/C */
+.version-tabs {
+  display: flex; gap: 0; background: #fff; border-bottom: 1px solid #d0d5dd;
+  padding: 0 24px;
+}
+.vtab {
+  padding: 10px 24px; font-size: 13px; font-weight: 600; color: #667085;
+  border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent;
+}
+.vtab:hover { color: #1e3a5f; }
+.vtab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+
+/* Detail Panel */
+.detail-area { padding: 20px 24px; display: none; }
+.detail-area.active { display: block; }
+
+/* Side-by-side (3 columns) */
+.side-by-side {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;
+}
+@media (max-width: 1200px) { .side-by-side { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 800px) { .side-by-side { grid-template-columns: 1fr; } }
+
+.col-panel {
+  background: #fff; border-radius: 10px; border: 1px solid #e5e7eb; padding: 16px 20px;
+}
+.col-panel h3 {
+  font-size: 14px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+.col-plan h3 { color: #1e40af; }
+.col-authored h3 { color: #059669; }
+.col-draft h3 { color: #7e22ce; }
+.col-plan { border-left: 3px solid #3b82f6; }
+.col-authored { border-left: 3px solid #10b981; }
+.col-draft { border-left: 3px solid #a855f7; }
+
+/* Fields */
+.field { margin-bottom: 12px; }
+.field-label { font-size: 11px; font-weight: 700; color: #475467; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.field-value { font-size: 13px; color: #1a1a2e; }
+.field-value.empty { color: #9ca3af; font-style: italic; }
+.field-value.verbatim { background: #eff6ff; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #3b82f6; font-size: 12px; }
+.field-value.match { background: #dcfce7; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #16a34a; font-size: 12px; }
+.field-value.miss { background: #fecaca; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #ef4444; font-size: 12px; }
+
+/* Question rows */
+.q-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.q-table th {
+  background: #f8fafc; padding: 8px 12px; text-align: left; font-size: 11px;
+  font-weight: 700; color: #475467; text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 2px solid #e5e7eb;
+}
+.q-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; vertical-align: top; }
+.q-table tr:hover td { background: #f8fafc; }
+.q-type {
+  display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; text-transform: uppercase;
+}
+.q-type.lcq { background: #dbeafe; color: #1e40af; }
+.q-type.tdq { background: #ede9fe; color: #5b21b6; }
+.q-type.mpchoice { background: #fce7f3; color: #9d174d; }
+.q-type.highlight { background: #fef3c7; color: #92400e; }
+.q-type.claim { background: #d1fae5; color: #065f46; }
+.q-type.quickwrite { background: #e0e7ff; color: #3730a3; }
+.q-type.extension { background: #f3f4f6; color: #374151; }
+
+/* Planning notes */
+.planning-note {
+  background: #fffbeb; padding: 8px 12px; border-radius: 6px; border: 1px solid #fde68a;
+  font-size: 12px; color: #854d0e; margin-bottom: 16px;
+}
+.planning-note strong { color: #92400e; }
+
+/* Rubric */
+.rubric-panel {
+  background: #fff; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px;
+  margin-bottom: 20px;
+}
+.rubric-panel h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; margin-bottom: 16px; }
+.rubric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 900px) { .rubric-grid { grid-template-columns: 1fr; } }
+.rubric-tier {
+  border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px;
+}
+.rubric-tier h4 { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+.tier1 h4 { color: #dc2626; }
+.tier2 h4 { color: #d97706; }
+.tier3 h4 { color: #2563eb; }
+
+.rubric-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.rubric-label { font-size: 12px; color: #374151; flex: 1; }
+.rubric-score {
+  font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px;
+  cursor: pointer; user-select: none; min-width: 64px; text-align: center;
+}
+.rubric-score.exact, .rubric-score.full, .rubric-score.pass, .rubric-score.strong { background: #dcfce7; color: #166534; }
+.rubric-score.partial, .rubric-score.adequate, .rubric-score.flag { background: #fef9c3; color: #854d0e; }
+.rubric-score.missed, .rubric-score.low, .rubric-score.fail, .rubric-score.weak { background: #fecaca; color: #991b1b; }
+.rubric-score.na { background: #f3f4f6; color: #6b7280; }
+
+/* Key findings */
+.findings {
+  background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;
+  padding: 14px 18px; margin-top: 12px;
+}
+.findings h4 { font-size: 12px; font-weight: 700; color: #475467; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+.findings ul { padding-left: 18px; font-size: 13px; }
+.findings li { margin-bottom: 4px; }
+.findings .issue { color: #dc2626; }
+.findings .good { color: #16a34a; }
+
+/* Back button */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: none;
+  background: #e5e7eb; color: #374151; padding: 8px 16px; border-radius: 6px;
+  font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 16px;
+}
+.back-btn:hover { background: #d1d5db; }
+
+/* Aggregate panel */
+.agg-panel {
+  background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
+  padding: 20px; margin: 0 24px 20px;
+}
+.agg-panel h2 { font-size: 17px; font-weight: 700; color: #1e3a5f; margin-bottom: 12px; }
+.agg-table { width: 100%; border-collapse: collapse; }
+.agg-table th { background: #f8fafc; padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #475467; text-transform: uppercase; border-bottom: 2px solid #e5e7eb; }
+.agg-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+.takeaway-list { padding: 0 24px 20px; }
+.takeaway-list h2 { font-size: 17px; font-weight: 700; color: #1e3a5f; margin-bottom: 12px; }
+.takeaway-item { background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; padding: 12px 16px; margin-bottom: 8px; }
+.takeaway-item strong { color: #1e3a5f; }
+.takeaway-item p { font-size: 13px; color: #374151; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>QA Test Dashboard</h1>
+  <div class="header-meta">5 Lessons &times; 3 Versions &bull; March 19, 2026 &bull; Auto-scored by Claude</div>
+</div>
+
+<!-- SUMMARY VIEW -->
+<div id="summaryView">
+
+<div class="agg-panel">
+  <h2>Scorecard: Module Plan Adherence (Tier 1)</h2>
+  <table class="agg-table">
+    <thead>
+      <tr><th>Lesson ID</th><th>Lesson</th><th>Curriculum</th><th>Grade</th><th>Version A (High)</th><th>Version B (Moderate)</th><th>Version C (Limited)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>AM_CK3_XX_G4_7.0_1</code></td><td>L1: Exploring Characters</td><td>Amplify</td><td>G4</td><td><span class="rubric-score partial">Partial</span></td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td></tr>
+      <tr><td><code>AM_CK3_XX_G4_7.0_2</code></td><td>L2: Point of View</td><td>Amplify</td><td>G4</td><td><span class="rubric-score partial">Partial</span></td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td></tr>
+      <tr><td><code>SV_MYP_XX_G8_4.0_5</code></td><td>L5: Flowers for Algernon</td><td>MyPerspectives</td><td>G8</td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td></tr>
+      <tr><td><code>GM_WNW_XX_G6_2.11</code></td><td>L11: Build Understanding of Arete</td><td>Wit &amp; Wisdom</td><td>G6</td><td><span class="rubric-score partial">Partial</span></td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td></tr>
+      <tr><td><code>GM_WNW_XX_G5_3.0_18</code></td><td>L18: Narrator's Point of View</td><td>Wit &amp; Wisdom</td><td>G5</td><td><span class="rubric-score partial">Partial</span></td><td><span class="rubric-score full">Full</span></td><td><span class="rubric-score full">Full</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="agg-panel">
+  <h2>Scorecard: Design Principles (Tier 2)</h2>
+  <table class="agg-table">
+    <thead>
+      <tr><th>Lesson ID</th><th>Lesson</th><th>Version A</th><th>Version B</th><th>Version C</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>AM_CK3_XX_G4_7.0_1</code></td><td>L1: Exploring Characters</td><td><span class="rubric-score flag">Flag</span> overlap</td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td></tr>
+      <tr><td><code>AM_CK3_XX_G4_7.0_2</code></td><td>L2: Point of View</td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td></tr>
+      <tr><td><code>SV_MYP_XX_G8_4.0_5</code></td><td>L5: Flowers for Algernon</td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td></tr>
+      <tr><td><code>GM_WNW_XX_G6_2.11</code></td><td>L11: Build Understanding of Arete</td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score flag">Flag</span> overlap</td><td><span class="rubric-score flag">Flag</span> overlap</td></tr>
+      <tr><td><code>GM_WNW_XX_G5_3.0_18</code></td><td>L18: Narrator's Point of View</td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score pass">Pass</span></td><td><span class="rubric-score fail">FAIL</span> 7 DQs + dup</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="agg-panel" style="margin: 0 24px 20px;">
+  <h2>Failure Analysis: Why These Issues Happened</h2>
+  <table class="agg-table">
+    <thead><tr><th style="width:180px;">Issue</th><th>Where</th><th>Root Cause</th><th>Proposed Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="rubric-score partial">Partial</span> Verbatim TT dropped</td>
+        <td>Version A: 4 of 5 lessons</td>
+        <td>The skill's assessment section uses a fixed pattern: <strong>Claim &rarr; QuickWrite</strong>. It picks whichever verbatim TT best fits the QuickWrite slot and uses it. The second TT verbatim (typically a narrower or more specific question) gets orphaned because there's no obvious slot for it. The skill doesn't attempt to place it as a DQ or as a second assessment item.</td>
+        <td>When two TT verbatim questions exist, use one as the QuickWrite prompt and place the other as: (a) a DQ earlier in the sequence, (b) the Claim stem, or (c) a second assessment item (e.g., MC + summary for MP format). The one lesson that got this right (AM G4 L2) used TT #1 as the Claim and TT #2 as the QuickWrite.</td>
+      </tr>
+      <tr>
+        <td><span class="rubric-score partial">Partial</span> Planning note partially followed</td>
+        <td>AM_CK3_XX_G4_7.0_2 Version A</td>
+        <td>The planning note said <em>"All driving questions should give students a specific paragraph range."</em> The skill applied paragraph ranges to Q4 and Q5 (the later, more analytical questions) but not to Q1-Q3. It likely interprets paragraph ranges as an analytical scaffolding tool rather than a universal formatting instruction, so it only applied them where it felt they were pedagogically needed.</td>
+        <td>When a planning note uses universal language ("all," "every," "each"), the skill should apply it to every applicable question, not selectively. Add a post-draft check that scans planning notes for universal qualifiers and validates compliance.</td>
+      </tr>
+      <tr>
+        <td><span class="rubric-score flag">Flag</span> Question overlap</td>
+        <td>4 of 15 drafts (AM G4 L1-A, WW G6 L11-B, WW G6 L11-C, WW G5 L18-C)</td>
+        <td>The skill tends to add a "synthesis" or "capstone" TDQ near the end of the DQ sequence that asks students to pull together insights from earlier questions. While pedagogically reasonable, the synthesis question often substantially overlaps with a narrower question asked earlier (e.g., "How does Odysseus demonstrate arete in Excerpt 1?" followed later by "What do Odysseus's choices reveal about the kind of leader he is?"). The skill doesn't compare new questions against existing ones for semantic redundancy.</td>
+        <td>Add a mutual exclusivity check: before finalizing, compare each question pair. If two questions could be answered with substantially the same response, merge them or cut the less specific one. Alternatively, ensure synthesis questions explicitly require multi-excerpt or multi-question reasoning that can't be answered from a single earlier question.</td>
+      </tr>
+      <tr>
+        <td><span class="rubric-score fail">FAIL</span> 7 DQs + duplicate</td>
+        <td>GM_WNW_XX_G5_3.0_18 Version C only</td>
+        <td>With no verbatim and only "Questions about narrator point of view in chapter 3" as guidance, the skill had maximum creative freedom. It generated separate question threads for Delphine (Q1, Q3, Q4) and Calinda (Q2, Q5, Q6), then added a comparison question (Q7) that essentially re-asks Q2. Without a verbatim count constraint or strong outline, the skill over-generated to ensure thorough coverage of both characters. This is the only Version C failure across all 5 lessons, suggesting the skill generally handles minimal guidance well but can overgenerate on texts with two parallel focal characters.</td>
+        <td>Enforce a hard DQ ceiling of 6. Add a duplicate detection step that flags questions with &gt;70% semantic similarity. The skill already respects count limits when the module plan specifies them (e.g., "5 DQs total") &mdash; the issue only surfaces when no count is given.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="takeaway-list">
+  <h2>Key Takeaways</h2>
+  <div class="takeaway-item">
+    <strong>1. Version B is the sweet spot</strong>
+    <p>Perfect Tier 1 compliance across all 5 lessons. The skill performs best with moderate guidance. <em>Why:</em> With one verbatim DQ and one verbatim TT, there's exactly one slot for each &mdash; no orphaning problem. The looser outline gives the skill enough room to make good choices without the risk of missing a specific instruction.</p>
+  </div>
+  <div class="takeaway-item">
+    <strong>2. Version A drops verbatim TT questions</strong>
+    <p>In 4/5 lessons, one of two verbatim Target Task questions was completely dropped. <em>Why:</em> The skill's Claim+QuickWrite assessment pattern only has one natural slot for a verbatim TT. When two are provided, the second has nowhere to go. The one success (AM G4 L2) happened because TT #1 fit naturally as a Claim stem. See failure analysis above for the fix.</p>
+  </div>
+  <div class="takeaway-item">
+    <strong>3. Version C mostly works</strong>
+    <p>4/5 Version C drafts were solid. <em>Why the one failure:</em> WW G5 L18's text has two parallel characters (Delphine and Calinda) that Tilly describes very differently. Without a DQ count constraint, the skill generated separate question threads for each character plus a comparison question, hitting 7 DQs with Q2 and Q7 being near-duplicates.</p>
+  </div>
+  <div class="takeaway-item">
+    <strong>4. Question overlap is a pattern</strong>
+    <p>Flagged in 4/15 drafts. <em>Why:</em> The skill's question-generation logic adds a synthesis/capstone TDQ near the end of the sequence to tie earlier questions together. This is a sound pedagogical instinct, but the skill doesn't check whether the synthesis question substantially overlaps with an earlier narrower question. It's particularly common on texts with a single dominant theme (like arete) where every question circles back to the same concept.</p>
+  </div>
+  <div class="takeaway-item">
+    <strong>5. No issues with length, grade level, or MC+HL limits</strong>
+    <p>All 15 drafts passed on question length, accessible language, grade-level appropriateness, and the 2 MC+HL cap.</p>
+  </div>
+</div>
+
+<div style="padding: 0 24px 12px;"><h2 style="font-size:17px;font-weight:700;color:#1e3a5f;">Click a lesson to drill down</h2></div>
+
+<div class="summary-grid" id="lessonCards"></div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div id="detailView" class="detail-area">
+  <button class="back-btn" onclick="showSummary()">&larr; Back to Summary</button>
+  <div id="lessonTitle" style="font-size:18px;font-weight:700;color:#1e3a5f;margin-bottom:4px;"></div>
+  <div id="lessonMeta" style="font-size:13px;color:#667085;margin-bottom:16px;"></div>
+
+  <div class="version-tabs" id="versionTabs"></div>
+  <div id="versionContent" style="padding-top:16px;"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA: All 15 lessons pre-loaded with grading
+// ============================================================
+const lessons = [
+  {
+    id: "AM_CK3_XX_G4_7.0_1", name: "L1: Exploring Characters", curriculum: "Amplify", grade: "G4",
+    text: "The Season of Styx Malone, Chs. 1-3",
+    objective: "Students will describe Caleb's character based on his thoughts, words, and actions.",
+    authored: [
+      {n:1, type:"mpchoice", q:"Pick the answer that best defines \"extraordinary\" as it is used in the sentence."},
+      {n:2, type:"lcq", q:"What does Caleb think his father means when he calls him extraordinary?"},
+      {n:3, type:"lcq", q:"In Excerpt 1, how does Caleb feel about being ordinary?"},
+      {n:4, type:"lcq", q:"Why does Caleb want the fireworks so badly?"},
+      {n:5, type:"highlight", q:"Highlight a detail from paragraphs 28-38 that shows how Caleb reacts when Cory sells him the fireworks."},
+      {n:6, type:"claim", q:"Write a claim that answers: How is Caleb characterized in these excerpts? Make sure your claim names a specific character trait."},
+      {n:7, type:"quickwrite", q:"How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim, evidence from the text, and an explanation."},
+      {n:8, type:"extension", q:"What do you think Caleb will do next to prove he's not ordinary?"}
+    ],
+    versions: {
+      A: {
+        label: "A: High Guidance",
+        plan: {
+          verbatimDQ: ["What does Caleb think his father means when he calls him extraordinary?", "How does Caleb feel about being ordinary?"],
+          verbatimTT: ["Which sentence from the text best shows how Caleb feels about being called extraordinary?", "How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim evidence from the text and an explanation."],
+          dqOutline: "1 MC vocab (word: extraordinary); 1 TDQ about Caleb's actions/feelings about being ordinary; 1 TDQ about Caleb's relationship with father; 5 DQs total",
+          ttFormat: "Quickwrite ELEM",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1, type:"mpchoice", q:"What does the word \"extraordinary\" mean as Caleb's dad uses it in paragraph 15?"},
+            {n:2, type:"lcq", q:"What does Caleb think his father means when he calls him extraordinary?"},
+            {n:3, type:"tdq", q:"How does Caleb feel about being ordinary?"},
+            {n:4, type:"highlight", q:"Highlight one detail from Excerpt 3 that shows how Caleb feels about being the center of attention."},
+            {n:5, type:"tdq", q:"What do you learn about Caleb from the way he reacts to his father calling him extraordinary?"}
+          ],
+          assessment: "Claim + QuickWrite: \"How is Caleb characterized in these excerpts?\"",
+          extension: "Caleb says \"Who's ordinary now?\" Do you think holding the fireworks actually made Caleb less ordinary?"
+        },
+        rubric: {
+          t1: {verbatim: "Partial", verbatimNote: "DQ verbatim exact. TT #1 dropped entirely.", specCompliance: "Partial", specNote: "Added unspecified Highlight. TT #1 missing."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Flag", exclusiveNote: "Q3 and Q5 overlap thematically"},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Adequate"}
+        },
+        findings: ["Dropped TT #1 \"Which sentence...\" — not in DQs or assessment", "Added a Highlight (Q4) not in the outline", "Q3 and Q5 have thematic overlap about ordinary/extraordinary feelings"]
+      },
+      B: {
+        label: "B: Moderate Guidance",
+        plan: {
+          verbatimDQ: ["What does Caleb think his father means when he calls him extraordinary?"],
+          verbatimTT: ["How is Caleb characterized in these excerpts? Respond in a paragraph that includes your claim evidence from the text and an explanation."],
+          dqOutline: "Include a vocabulary question; Other questions should explore Caleb's character traits",
+          ttFormat: "Quickwrite ELEM",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1, type:"mpchoice", q:"What does the word \"extraordinary\" mean when Dad uses it in paragraph 15?"},
+            {n:2, type:"lcq", q:"What does Caleb think his father means when he calls him extraordinary?"},
+            {n:3, type:"highlight", q:"Highlight one detail from Excerpt 3 that shows how Caleb feels when he becomes the center of attention."},
+            {n:4, type:"tdq", q:"Based on these excerpts, what kind of person is Caleb? What does he want most?"}
+          ],
+          assessment: "Claim + QuickWrite: \"How is Caleb characterized in these excerpts?\"",
+          extension: "What do Caleb's ceiling pictures tell you about the kind of life he dreams about?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "DQ and TT verbatim both exact.", specCompliance: "Full", specNote: "Vocab question included. Character exploration throughout."},
+          t2: {dqCount: "Pass", dqCountVal: 4, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Adequate"}
+        },
+        findings: ["All verbatim reproduced exactly", "Clean execution — all specs followed", "Extension (ceiling pictures) is creative and text-anchored"]
+      },
+      C: {
+        label: "C: Limited Guidance",
+        plan: {
+          verbatimDQ: [],
+          verbatimTT: [],
+          dqOutline: "Questions should explore Caleb's character and the idea of being ordinary vs extraordinary",
+          ttFormat: "Quickwrite ELEM",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1, type:"mpchoice", q:"Pick the answer that best defines \"extraordinary\" as it is used in the sentence."},
+            {n:2, type:"lcq", q:"How does Caleb feel about being called ordinary?"},
+            {n:3, type:"lcq", q:"What does Caleb do when he sees Cory with the fireworks?"},
+            {n:4, type:"highlight", q:"Highlight one detail from Excerpt 3 that shows how Caleb feels after getting the fireworks."},
+            {n:5, type:"tdq", q:"What does Caleb's reaction to the fireworks tell you about what kind of person he is?"}
+          ],
+          assessment: "Claim + QuickWrite: \"How is Caleb characterized in these excerpts?\"",
+          extension: "What do you think Caleb will do next to prove he's not ordinary?"
+        },
+        rubric: {
+          t1: {verbatim: "N/A", verbatimNote: "No verbatim specified", specCompliance: "Full", specNote: "All questions explore character and ordinary/extraordinary theme."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Adequate"}
+        },
+        findings: ["Solid activity with no guidance", "MC includes quoted passage in stem — good scaffolding for G4", "Each question has a distinct focus"]
+      }
+    }
+  },
+  {
+    id: "AM_CK3_XX_G4_7.0_2", name: "L2: Point of View", curriculum: "Amplify", grade: "G4",
+    text: "The Season of Styx Malone, Ch. 6",
+    objective: "Students will analyze how Bobby Gene and Caleb's feelings about Cory change.",
+    authored: [
+      {n:1, type:"mpchoice", q:"What does the word \"transgressions\" mean as it is used in this paragraph?"},
+      {n:2, type:"lcq", q:"Go back to paragraphs 13-16. How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?"},
+      {n:3, type:"lcq", q:"Look at paragraphs 48-50. What happens to Caleb while the boys are doing their chores?"},
+      {n:4, type:"lcq", q:"Now look at paragraphs 52-55. How do Bobby Gene and Cory react when Caleb falls?"},
+      {n:5, type:"tdq", q:"Re-read paragraphs 57-59. How do Caleb and Bobby Gene feel about Cory by the end of the chapter?"},
+      {n:6, type:"claim", q:"In one sentence, write a claim: How does Bobby Gene and Caleb's relationship with Cory change from the beginning to the end of the chapter and why?"},
+      {n:7, type:"quickwrite", q:"How does Bobby Gene and Caleb's relationship with Cory change... Write a response using your claim, one piece of evidence, and an explanation."},
+      {n:8, type:"extension", q:"Why do you think all three boys end up laughing together, even though Caleb was trying to start a fight?"}
+    ],
+    versions: {
+      A: {
+        label: "A: High Guidance",
+        plan: {
+          verbatimDQ: ["How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?","What happens to Caleb while the boys are doing their chores?"],
+          verbatimTT: ["What causes the biggest shift in how Bobby Gene and Caleb feel about Cory?","How does Bobby Gene and Caleb's relationship with Cory change from the beginning to the end of the chapter and why?"],
+          dqOutline: "1 MC vocab (transgressions); 1 TDQ about feelings shifting; 1 TDQ about end-of-chapter feelings; 5 DQs total",
+          ttFormat: "Quickwrite ELEM",
+          planningNotes: "All driving questions should give students a specific paragraph range (2-5 paragraphs) to look at"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"mpchoice",q:"In paragraph 1, what does the word \"transgressions\" most likely mean?"},
+            {n:2,type:"lcq",q:"How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?"},
+            {n:3,type:"lcq",q:"What happens to Caleb while the boys are doing their chores?"},
+            {n:4,type:"highlight",q:"Highlight one detail from paragraphs 55-59 that shows how Caleb and Bobby Gene's feelings about Cory have changed."},
+            {n:5,type:"tdq",q:"Based on paragraphs 49-55, how do Caleb and Bobby Gene's feelings about Cory change after Caleb's fall?"}
+          ],
+          assessment: "Claim: \"What causes the biggest shift...\" + QuickWrite: \"How does the relationship change...\"",
+          extension: "If the boys had not done chores together, do you think Cory would have stayed a bully?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "Both DQ verbatims exact. Both TT verbatims used.", specCompliance: "Partial", specNote: "Planning note 'All DQs should have paragraph ranges' only followed for 2/5 DQs."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Both verbatim DQ and TT used — this is the one Version A that got TT right","Planning note 'All DQs should have paragraph ranges' only applied to Q4 and Q5, not Q1-Q3"]
+      },
+      B: {
+        label: "B: Moderate Guidance",
+        plan: {
+          verbatimDQ: ["How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?"],
+          verbatimTT: ["How does Bobby Gene and Caleb's relationship with Cory change from the beginning to the end of the chapter and why?"],
+          dqOutline: "Include a vocab question; Questions should track the relationship arc; 5 total DQs",
+          ttFormat: "Quickwrite ELEM",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"mpchoice",q:"What does the word \"transgressions\" mean in paragraph 1?"},
+            {n:2,type:"lcq",q:"How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?"},
+            {n:3,type:"lcq",q:"What happens to Caleb when he tries to fight Cory?"},
+            {n:4,type:"highlight",q:"Highlight one detail from paragraphs 52-59 that shows Cory's attitude has changed."},
+            {n:5,type:"tdq",q:"Why does the shared laughter change how the boys feel about each other?"}
+          ],
+          assessment: "Claim + QuickWrite: relationship change",
+          extension: "If the boys had not done chores together, do you think Cory would have stayed a bully?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "All verbatim exact.", specCompliance: "Full", specNote: "Vocab included. Relationship arc tracked. 5 DQs."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Adequate"}
+        },
+        findings: ["Clean execution on moderate guidance","Follows the spirit of the plan well"]
+      },
+      C: {
+        label: "C: Limited Guidance",
+        plan: { verbatimDQ: [], verbatimTT: [], dqOutline: "Questions about how relationships change in the chapter", ttFormat: "Quickwrite ELEM", planningNotes: "(none)" },
+        draft: {
+          dqs: [
+            {n:1,type:"mpchoice",q:"What does the word \"transgressions\" most likely mean in paragraph 1?"},
+            {n:2,type:"lcq",q:"How do Caleb and Bobby Gene feel about Cory at the beginning of the chapter?"},
+            {n:3,type:"highlight",q:"Highlight one detail from paragraphs 49-59 that shows the boys' feelings are changing."},
+            {n:4,type:"tdq",q:"What causes the biggest change in how the boys feel about Cory?"}
+          ],
+          assessment: "Claim + QuickWrite: relationship change",
+          extension: "Do you think the change in Cory was really an accident, or was something else going on?"
+        },
+        rubric: {
+          t1: {verbatim: "N/A", verbatimNote: "No verbatim specified", specCompliance: "Full", specNote: "All questions track relationship change."},
+          t2: {dqCount: "Pass", dqCountVal: 4, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Adequate"}
+        },
+        findings: ["Only 4 DQs — shorter but complete","Extension is particularly good — asks a nuanced question"]
+      }
+    }
+  },
+  {
+    id: "SV_MYP_XX_G8_4.0_5", name: "L5: Flowers for Algernon", curriculum: "MyPerspectives", grade: "G8",
+    text: "Flowers for Algernon, paragraphs 58-120",
+    objective: "Students will review key points to show literal comprehension.",
+    authored: [
+      {n:1, type:"lcq", q:"Why does Miss Kinnian tell Charlie not to correct his punctuation?"},
+      {n:2, type:"lcq", q:"What does Charlie realize about his coworkers at the party?"},
+      {n:3, type:"lcq", q:"How do people at the factory treat Charlie after he becomes smarter?"},
+      {n:4, type:"lcq", q:"Why are Doctors Nemur and Strauss arguing?"},
+      {n:5, type:"lcq", q:"What does Miss Kinnian tell Charlie about his progress during their dinner?"},
+      {n:6, type:"mpchoice", q:"What does Charlie's reaction to this realization reveal about him? (Target Task MC)"},
+      {n:7, type:"lcq", q:"Write a 2-3 sentence summary of this excerpt from Flowers for Algernon."},
+      {n:8, type:"extension", q:"Charlie still carries his rabbit's foot even though he's becoming more intelligent. Why do you think he holds onto it?"}
+    ],
+    versions: {
+      A: {
+        label: "A: High Guidance",
+        plan: {
+          verbatimDQ: ["Why does Miss Kinnian tell Charlie not to correct his punctuation?","Why are Doctors Nemur and Strauss arguing?"],
+          verbatimTT: ["What is the central idea of paragraphs 58-120?","Write a 2-3 sentence summary of this excerpt."],
+          dqOutline: "1 LCQ about Charlie/Miss Kinnian; 1 TDQ about Nemur/Strauss conflict; 1 LCQ about intelligence affecting daily interactions; 5 DQs total; All open response; Sequential order; Full breadth coverage",
+          ttFormat: "MP Target Task ELEM / Short Summary ELEM",
+          planningNotes: "All open response (lcq or tdq); Questions must cover the full breadth; Sequential order"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"Why does Miss Kinnian tell Charlie not to correct his punctuation?"},
+            {n:2,type:"lcq",q:"What happens at the party that makes Charlie realize his coworkers are not really his friends?"},
+            {n:3,type:"lcq",q:"How does Charlie's increasing intelligence affect his relationships at the factory?"},
+            {n:4,type:"tdq",q:"Why are Doctors Nemur and Strauss arguing?"},
+            {n:5,type:"lcq",q:"What concern does Miss Kinnian express during her dinner with Charlie?"}
+          ],
+          assessment: "MC: Central idea + LCQ: 2-3 sentence summary",
+          extension: "Charlie still wanted to take Joe and Frank to lunch after learning they mocked him. What does this tell you about Charlie?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "Both DQ and both TT verbatim used.", specCompliance: "Full", specNote: "All specs met: 5 DQs, all open response, sequential order, full breadth, correct types."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+0=0 in DQs", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Adequate", rigor: "Adequate"}
+        },
+        findings: ["Strongest spec compliance of any Version A — every planning note followed","Sequential ordering maintained: paras 67 → 71-80 → 101-103 → 105-106 → 109-120","Both TT questions used (MC + summary)"]
+      },
+      B: {
+        label: "B: Moderate Guidance",
+        plan: {
+          verbatimDQ: ["Why does Miss Kinnian tell Charlie not to correct his punctuation?"],
+          verbatimTT: ["Write a 2-3 sentence summary of this excerpt."],
+          dqOutline: "Mix of lcq and tdq; Cover key events; Sequential order; 5 DQs; Include Central Idea MC",
+          ttFormat: "MP Target Task ELEM / Short Summary ELEM",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"Why does Miss Kinnian tell Charlie not to correct his punctuation?"},
+            {n:2,type:"lcq",q:"What happens to Charlie at the party with Joe Carp and Frank Reilly?"},
+            {n:3,type:"highlight",q:"Highlight one detail from paragraphs 99-103 that shows how people react to Charlie's increasing intelligence."},
+            {n:4,type:"tdq",q:"What does the argument between Dr. Nemur and Dr. Strauss reveal about their motivations?"},
+            {n:5,type:"tdq",q:"How does Charlie's view of Miss Kinnian change over the course of this excerpt?"}
+          ],
+          assessment: "MC: Central idea + LCQ: summary",
+          extension: "If you could give Charlie advice after the party scene, what would you tell him about friendship?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "All verbatim exact.", specCompliance: "Full", specNote: "Mix of types, sequential, 5 DQs, Central Idea MC in assessment."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+1=1", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Added a Highlight (Q3) not explicitly specified — debatable fit with 'mix of lcq and tdq'","Q4 and Q5 push into analysis — strong rigor for G8","Otherwise excellent compliance"]
+      },
+      C: {
+        label: "C: Limited Guidance",
+        plan: { verbatimDQ: [], verbatimTT: [], dqOutline: "Questions about what happens in paragraphs 58-120", ttFormat: "MP Target Task ELEM / Short Summary ELEM", planningNotes: "(none)" },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What does Miss Kinnian warn Charlie about in paragraph 58?"},
+            {n:2,type:"lcq",q:"What happens to Charlie at the party in paragraphs 71-80?"},
+            {n:3,type:"lcq",q:"What do Dr. Nemur, Dr. Strauss, and Burt each say about I.Q.?"},
+            {n:4,type:"lcq",q:"How do Charlie's coworkers treat him after he gets smarter and earns a bonus?"},
+            {n:5,type:"lcq",q:"What are Dr. Nemur and Dr. Strauss arguing about?"}
+          ],
+          assessment: "MC: Central idea + LCQ: summary",
+          extension: "Charlie says he wants people to 'like me and be friendly' once intelligent. Do you think intelligence alone can make people like you?"
+        },
+        rubric: {
+          t1: {verbatim: "N/A", verbatimNote: "No verbatim specified", specCompliance: "Full", specNote: "All questions about events in paragraphs 58-120."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+0=0", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Adequate", rigor: "Adequate"}
+        },
+        findings: ["All 5 DQs are LCQ — no TDQ in driving questions","For literal comprehension this makes sense but less analytically demanding","Extension is strong — connects to text evidence"]
+      }
+    }
+  },
+  {
+    id: "GM_WNW_XX_G6_2.11", name: "L11: Build Understanding of Arete", curriculum: "Wit & Wisdom", grade: "G6",
+    text: "The Odyssey (Gillian Cross), pages 10-31",
+    objective: "Explain how arete builds understanding of Odysseus as the hero archetype.",
+    authored: [
+      {n:1, type:"tdq", q:"Based on his actions so far, what can you infer is Odysseus' view of duty and responsibility?"},
+      {n:2, type:"tdq", q:"Based on his actions so far, what can you infer is Odysseus' view of temptation?"},
+      {n:3, type:"tdq", q:"Explain how an event from the provided excerpts supports the idea that self-control is important."},
+      {n:4, type:"mpchoice", q:"The Greek kings needed Odysseus because of his \"quick wits and cunning.\" What are quick wits and cunning?"},
+      {n:5, type:"tdq", q:"Why might quick wits and cunning contribute to a person having arete?"},
+      {n:6, type:"quickwrite", q:"How does the concept of arete help you better understand the characters of The Odyssey, particularly Odysseus? Defend with one text example."},
+      {n:7, type:"extension", q:"Does Odysseus' initial reluctance to leave his family make him any less dutiful or honorable?"}
+    ],
+    versions: {
+      A: {
+        label: "A: High Guidance",
+        plan: {
+          verbatimDQ: ["What is arete and why was it important in ancient Greek culture?","What specific choices does Odysseus make in chapters 1-3 that demonstrate arete?"],
+          verbatimTT: ["How does the concept of arete connect to what ancient Greek culture valued in its heroes?","How does the concept of arete help you better understand the characters of The Odyssey particularly the hero Odysseus?"],
+          dqOutline: "1 Highlight (find passage showing Odysseus demonstrates arete); 1 TDQ (Odysseus vs men contrast); 1 TDQ (monomyth connection); 5 DQs total",
+          ttFormat: "Quickwrite",
+          planningNotes: "Mine TDQs from the Build Understanding of Arete section"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What is arete and why was it important in ancient Greek culture?"},
+            {n:2,type:"highlight",q:"Highlight one detail that shows Odysseus demonstrating arete."},
+            {n:3,type:"tdq",q:"How do Odysseus's choices contrast with his men's behavior?"},
+            {n:4,type:"tdq",q:"What specific choices does Odysseus make in chapters 1-3 that demonstrate arete?"},
+            {n:5,type:"tdq",q:"How do the events in these three chapters fit into the structure of the monomyth?"}
+          ],
+          assessment: "Claim + QuickWrite: \"How does arete help you understand Odysseus?\"",
+          extension: "Odysseus leaves his family to fulfill duty. Do you think following duty is always the right choice?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "Both DQ verbatims exact.", specCompliance: "Partial", specNote: "TT #1 dropped. All outline specs (Highlight, contrast TDQ, monomyth TDQ) present."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+1=1", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Dropped TT #1 'How does arete connect to what Greek culture valued...'","All outline-specified question types present (Highlight, contrast, monomyth)","Q5 monomyth connection is appropriately challenging for G6"]
+      },
+      B: {
+        label: "B: Moderate Guidance",
+        plan: {
+          verbatimDQ: ["What is arete and why was it important in ancient Greek culture?"],
+          verbatimTT: ["How does the concept of arete help you better understand the characters of The Odyssey?"],
+          dqOutline: "Questions should explore arete and its connection to Odysseus",
+          ttFormat: "Quickwrite",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What is arete and why was it important in ancient Greek culture?"},
+            {n:2,type:"lcq",q:"Why does Odysseus leave his family to fight in the Trojan War?"},
+            {n:3,type:"tdq",q:"What does Odysseus's reaction to his men in paragraphs 5-9 reveal about his character?"},
+            {n:4,type:"highlight",q:"Highlight one detail from paragraphs 10-12 that shows Odysseus demonstrating self-control."},
+            {n:5,type:"tdq",q:"Why does Odysseus choose diplomacy over taking what he needs?"},
+            {n:6,type:"tdq",q:"How does Odysseus's behavior across all three excerpts connect to arete?"}
+          ],
+          assessment: "Claim + QuickWrite: arete and Odysseus",
+          extension: "Odysseus leaves family with 'heavy heart' because of a promise. Is keeping a promise always right?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "All verbatim exact.", specCompliance: "Full", specNote: "Questions explore arete and Odysseus connection."},
+          t2: {dqCount: "Pass", dqCountVal: 6, mcHl: "Pass", mcHlVal: "0+1=1", length: "Pass", grade: "Pass", exclusive: "Flag", exclusiveNote: "Q6 synthesis re-asks Q3/Q5"},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["6 DQs — at the maximum threshold","Q6 is a synthesis question that overlaps with Q3/Q5","Otherwise strong execution"]
+      },
+      C: {
+        label: "C: Limited Guidance",
+        plan: { verbatimDQ: [], verbatimTT: [], dqOutline: "Questions about arete and Odysseus's character development", ttFormat: "Quickwrite", planningNotes: "(none)" },
+        draft: {
+          dqs: [
+            {n:1,type:"mpchoice",q:"What is the main reason Odysseus leaves his home to fight in the Trojan War?"},
+            {n:2,type:"lcq",q:"Why do the other Greek kings specifically need Odysseus?"},
+            {n:3,type:"tdq",q:"How does Odysseus demonstrate arete in Excerpt 1?"},
+            {n:4,type:"tdq",q:"How does Odysseus respond differently from his men with the Lotus Eaters?"},
+            {n:5,type:"highlight",q:"Highlight one detail from Excerpt 3 showing Odysseus choosing restraint."},
+            {n:6,type:"tdq",q:"Based on these three excerpts, what do Odysseus's choices reveal about the kind of leader he is?"}
+          ],
+          assessment: "Claim + QuickWrite: arete and Odysseus",
+          extension: "Do you think keeping a promise is always the right thing to do?"
+        },
+        rubric: {
+          t1: {verbatim: "N/A", verbatimNote: "No verbatim specified", specCompliance: "Full", specNote: "Questions cover arete and character development."},
+          t2: {dqCount: "Pass", dqCountVal: 6, mcHl: "Pass", mcHlVal: "1+1=2", length: "Pass", grade: "Pass", exclusive: "Flag", exclusiveNote: "Q3 and Q6 overlap"},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Added MC question (not specified) — sensible for entry","6 DQs at the max threshold","Q3/Q6 overlap: Q6 re-synthesizes what Q3 already asks"]
+      }
+    }
+  },
+  {
+    id: "GM_WNW_XX_G5_3.0_18", name: "L18: Narrator's Point of View", curriculum: "Wit & Wisdom", grade: "G5",
+    text: "The River Between Us, Ch. 3",
+    objective: "Analyze how Tilly's experiences shape her POV of Delphine and Calinda.",
+    authored: [
+      {n:1, type:"highlight", q:"Highlight evidence from paragraphs 6-10 that best shows one of Tilly's observations about Delphine."},
+      {n:2, type:"tdq", q:"What does Tilly notice about Calinda? Use details from the text in your answer."},
+      {n:3, type:"tdq", q:"Describe Tilly's point of view, or feelings, about Delphine and Calinda."},
+      {n:4, type:"tdq", q:"How does Tilly react to these new characters?"},
+      {n:5, type:"tdq", q:"How do her life experiences influence her point of view of Delphine and Calinda?"},
+      {n:6, type:"claim", q:"In one sentence, write a topic statement: How is Tilly's point of view reflected in her description of Delphine and Calinda?"},
+      {n:7, type:"quickwrite", q:"How is Tilly's point of view reflected in her description of Delphine and Calinda? Support with textual evidence."},
+      {n:8, type:"extension", q:"Calinda doesn't speak a single word in this chapter. What questions do you have about Calinda based on what Tilly observes?"}
+    ],
+    versions: {
+      A: {
+        label: "A: High Guidance",
+        plan: {
+          verbatimDQ: ["What does Tilly first notice about Delphine and Calinda when they arrive?","How does Tilly's life in Grand Tower influence the way she describes the new characters?"],
+          verbatimTT: ["What details from chapter 3 reveal how Tilly sees Delphine and Calinda differently?","How do Tilly's experiences shape her point of view of Delphine and Calinda?"],
+          dqOutline: "1 Highlight (evidence from pp. 34-39 showing Tilly's observations of Delphine); 1 TDQ (what descriptions reveal about Tilly's background); 5 DQs total",
+          ttFormat: "Quickwrite",
+          planningNotes: "Focus on evidence from pages 34-39"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What does Tilly first notice about Delphine and Calinda when they arrive?"},
+            {n:2,type:"tdq",q:"How does Tilly's life in Grand Tower influence the way she describes the new characters?"},
+            {n:3,type:"highlight",q:"Highlight one detail from paragraphs 6-10 showing Tilly's observations about Delphine."},
+            {n:4,type:"tdq",q:"What do Tilly's descriptions reveal about her own background and assumptions?"},
+            {n:5,type:"highlight",q:"Highlight one detail from paragraphs 33-42 showing how Tilly sees Calinda differently from Delphine."}
+          ],
+          assessment: "Claim + QuickWrite: Tilly's experiences and POV",
+          extension: "What observations might Delphine have made about Grand Tower and its people?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "Both DQ verbatims exact.", specCompliance: "Partial", specNote: "TT #1 dropped. All outline types present. Pages 34-39 focus maintained."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+2=2", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Dropped TT #1 'What details from chapter 3 reveal...'","Two Highlights at the design limit but serve distinct purposes (Delphine vs Calinda)","Q4 is excellent for G5 — requires inference about narrator"]
+      },
+      B: {
+        label: "B: Moderate Guidance",
+        plan: {
+          verbatimDQ: ["What does Tilly first notice about Delphine and Calinda when they arrive?"],
+          verbatimTT: ["How do Tilly's experiences shape her point of view of Delphine and Calinda?"],
+          dqOutline: "Questions should explore how the narrator's background shapes her view of the new characters",
+          ttFormat: "Quickwrite",
+          planningNotes: "(none)"
+        },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What does Tilly first notice about Delphine and Calinda when they arrive?"},
+            {n:2,type:"tdq",q:"How does Tilly describe Delphine differently from the way she describes Calinda?"},
+            {n:3,type:"highlight",q:"Highlight one detail from paragraphs 9-13 that shows Tilly is fascinated by Delphine."},
+            {n:4,type:"tdq",q:"What do Tilly's reactions to Delphine reveal about Tilly's own background?"},
+            {n:5,type:"tdq",q:"Why does Tilly wonder whether Delphine is an actress?"}
+          ],
+          assessment: "Claim + QuickWrite: Tilly's experiences and POV",
+          extension: "What observations might Delphine have made about Grand Tower?"
+        },
+        rubric: {
+          t1: {verbatim: "Exact", verbatimNote: "All verbatim exact.", specCompliance: "Full", specNote: "Questions explore narrator background shaping view."},
+          t2: {dqCount: "Pass", dqCountVal: 5, mcHl: "Pass", mcHlVal: "0+1=1", length: "Pass", grade: "Pass", exclusive: "Pass", exclusiveNote: ""},
+          t3: {alignment: "Strong", scaffolding: "Strong", rigor: "Strong"}
+        },
+        findings: ["Strong execution","Q5 'Why does Tilly wonder if Delphine is an actress?' is excellent — requires understanding Tilly's frame of reference","Clean compliance across all tiers"]
+      },
+      C: {
+        label: "C: Limited Guidance",
+        plan: { verbatimDQ: [], verbatimTT: [], dqOutline: "Questions about narrator point of view in chapter 3", ttFormat: "Quickwrite", planningNotes: "(none)" },
+        draft: {
+          dqs: [
+            {n:1,type:"lcq",q:"What does Tilly first notice about the young lady coming down the gangplank?"},
+            {n:2,type:"lcq",q:"How does Tilly describe the other young woman, Calinda, when she first sees her?"},
+            {n:3,type:"highlight",q:"Highlight one detail from paragraphs 7-15 that shows Tilly is fascinated by Delphine."},
+            {n:4,type:"tdq",q:"Why is Tilly so impressed by Delphine when she arrives in Grand Tower?"},
+            {n:5,type:"tdq",q:"Why is Tilly less certain about Calinda than she is about Delphine?"},
+            {n:6,type:"highlight",q:"Highlight one detail from paragraphs 33-44 showing Tilly is uncertain about Calinda."},
+            {n:7,type:"tdq",q:"How does the way Tilly describes Delphine compare to the way she describes Calinda?"}
+          ],
+          assessment: "Claim + QuickWrite: Tilly's experiences and POV",
+          extension: "What observations might Delphine have made about Grand Tower?"
+        },
+        rubric: {
+          t1: {verbatim: "N/A", verbatimNote: "No verbatim specified", specCompliance: "Full", specNote: "Questions about narrator POV."},
+          t2: {dqCount: "Fail", dqCountVal: 7, mcHl: "Pass", mcHlVal: "0+2=2", length: "Pass", grade: "Pass", exclusive: "Fail", exclusiveNote: "Q2 and Q7 are essentially the same question"},
+          t3: {alignment: "Strong", scaffolding: "Adequate", rigor: "Adequate"}
+        },
+        findings: ["7 DQs — EXCEEDS the 6 max rule","Q2 and Q7 are essentially the same question (both compare Delphine/Calinda descriptions)","Weakest draft in the entire set from a design principles standpoint"]
+      }
+    }
+  }
+];
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+function renderSummaryCards() {
+  const container = document.getElementById('lessonCards');
+  container.innerHTML = lessons.map((l,i) => {
+    const versionPills = ['A','B','C'].map(v => {
+      const r = l.versions[v].rubric;
+      const t1 = r.t1.specCompliance === 'Full' || r.t1.verbatim === 'N/A' ? (r.t1.specCompliance === 'Full' ? 'pass' : 'pass') : 'partial';
+      const t2fail = r.t2.dqCount === 'Fail' || r.t2.exclusive === 'Fail';
+      const cls = t2fail ? 'fail' : t1 === 'partial' ? 'partial' : 'pass';
+      return `<div class="version-pill ${cls}">V${v}: ${cls === 'fail' ? 'FAIL' : cls === 'partial' ? 'Partial' : 'Pass'}</div>`;
+    }).join('');
+    return `<div class="summary-card" onclick="showDetail(${i})">
+      <div class="card-title">${l.name}</div>
+      <div class="card-subtitle">${l.curriculum} ${l.grade} &bull; ${l.text}</div>
+      <div class="card-versions">${versionPills}</div>
+    </div>`;
+  }).join('');
+}
+
+function showSummary() {
+  document.getElementById('summaryView').style.display = 'block';
+  document.getElementById('detailView').classList.remove('active');
+}
+
+function showDetail(idx) {
+  const l = lessons[idx];
+  document.getElementById('summaryView').style.display = 'none';
+  const dv = document.getElementById('detailView');
+  dv.classList.add('active');
+  document.getElementById('lessonTitle').textContent = l.name;
+  document.getElementById('lessonMeta').textContent = `${l.curriculum} ${l.grade} | ${l.text} | ${l.objective}`;
+
+  // Version tabs
+  const tabs = document.getElementById('versionTabs');
+  tabs.innerHTML = ['A','B','C'].map(v =>
+    `<button class="vtab${v==='A'?' active':''}" onclick="switchVersion(${idx},'${v}',this)">${l.versions[v].label}</button>`
+  ).join('');
+
+  switchVersion(idx, 'A', tabs.querySelector('.vtab'));
+}
+
+function switchVersion(idx, ver, tabEl) {
+  document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+
+  const l = lessons[idx];
+  const v = l.versions[ver];
+  const container = document.getElementById('versionContent');
+
+  // Side-by-side: Plan | Authored | Draft
+  let planHtml = `<div class="col-panel col-plan"><h3>Module Plan Specs</h3>`;
+  if (v.plan.verbatimDQ.length) {
+    planHtml += `<div class="field"><div class="field-label">Verbatim DQs</div>`;
+    v.plan.verbatimDQ.forEach((q,i) => { planHtml += `<div class="field-value verbatim">${i+1}. ${q}</div>`; });
+    planHtml += `</div>`;
+  }
+  if (v.plan.verbatimTT.length) {
+    planHtml += `<div class="field"><div class="field-label">Verbatim Target Task</div>`;
+    v.plan.verbatimTT.forEach((q,i) => { planHtml += `<div class="field-value verbatim">${i+1}. ${q}</div>`; });
+    planHtml += `</div>`;
+  }
+  planHtml += `<div class="field"><div class="field-label">DQ Outline</div><div class="field-value">${v.plan.dqOutline}</div></div>`;
+  planHtml += `<div class="field"><div class="field-label">TT Format</div><div class="field-value">${v.plan.ttFormat}</div></div>`;
+  if (v.plan.planningNotes !== '(none)') {
+    planHtml += `<div class="planning-note"><strong>Planning Notes:</strong> ${v.plan.planningNotes}</div>`;
+  }
+  planHtml += `</div>`;
+
+  // Authored 25-26 column
+  let authoredHtml = `<div class="col-panel col-authored"><h3>Authored 25-26</h3>`;
+  authoredHtml += `<table class="q-table"><thead><tr><th>#</th><th>Type</th><th>Question</th></tr></thead><tbody>`;
+  l.authored.forEach(aq => {
+    authoredHtml += `<tr><td>${aq.n}</td><td><span class="q-type ${aq.type}">${aq.type}</span></td><td>${aq.q}</td></tr>`;
+  });
+  authoredHtml += `</tbody></table></div>`;
+
+  let draftHtml = `<div class="col-panel col-draft"><h3>Draft ${ver} Output</h3>`;
+  draftHtml += `<table class="q-table"><thead><tr><th>#</th><th>Type</th><th>Question</th></tr></thead><tbody>`;
+  let qNum = 0;
+  v.draft.dqs.forEach(dq => {
+    qNum++;
+    draftHtml += `<tr><td>${qNum}</td><td><span class="q-type ${dq.type}">${dq.type}</span></td><td>${dq.q}</td></tr>`;
+  });
+  // Add assessment as table rows with type badges
+  if (v.draft.assessment) {
+    // Parse assessment to show claim + quickwrite/MC as separate rows
+    const assessParts = v.draft.assessment.split('+').map(s => s.trim());
+    assessParts.forEach(part => {
+      qNum++;
+      let aType = 'claim';
+      if (part.toLowerCase().includes('quickwrite') || part.toLowerCase().includes('quick write')) aType = 'quickwrite';
+      else if (part.toLowerCase().includes('mc:') || part.toLowerCase().includes('mc ')) aType = 'mpchoice';
+      else if (part.toLowerCase().includes('lcq') || part.toLowerCase().includes('summary')) aType = 'lcq';
+      draftHtml += `<tr><td>${qNum}</td><td><span class="q-type ${aType}">${aType}</span></td><td>${part}</td></tr>`;
+    });
+  }
+  // Add extension as a table row
+  if (v.draft.extension) {
+    qNum++;
+    draftHtml += `<tr><td>${qNum}</td><td><span class="q-type extension">extension</span></td><td>${v.draft.extension}</td></tr>`;
+  }
+  draftHtml += `</tbody></table>`;
+  draftHtml += `</div>`;
+
+  // Rubric
+  let rubricHtml = `<div class="rubric-panel"><h3>Rubric Scores <span style="font-size:12px;font-weight:400;color:#667085;">(click scores to cycle)</span></h3>`;
+  rubricHtml += `<div class="rubric-grid">`;
+
+  // Tier 1
+  const r = v.rubric;
+  rubricHtml += `<div class="rubric-tier tier1"><h4>Tier 1: Plan Adherence</h4>`;
+  rubricHtml += rubricRow('Verbatim Fidelity', r.t1.verbatim, r.t1.verbatimNote);
+  rubricHtml += rubricRow('Spec Compliance', r.t1.specCompliance, r.t1.specNote);
+  rubricHtml += `</div>`;
+
+  // Tier 2
+  rubricHtml += `<div class="rubric-tier tier2"><h4>Tier 2: Design Principles</h4>`;
+  rubricHtml += rubricRow('DQ Count', r.t2.dqCount, `${r.t2.dqCountVal} DQs`);
+  rubricHtml += rubricRow('MC+HL \u22642', r.t2.mcHl, r.t2.mcHlVal);
+  rubricHtml += rubricRow('Question Length', r.t2.length, '');
+  rubricHtml += rubricRow('Grade Level', r.t2.grade, '');
+  rubricHtml += rubricRow('Mutually Exclusive', r.t2.exclusive, r.t2.exclusiveNote);
+  rubricHtml += `</div>`;
+
+  // Tier 3
+  rubricHtml += `<div class="rubric-tier tier3"><h4>Tier 3: Qualitative</h4>`;
+  rubricHtml += rubricRow('Alignment', r.t3.alignment, '');
+  rubricHtml += rubricRow('Scaffolding Arc', r.t3.scaffolding, '');
+  rubricHtml += rubricRow('Rigor', r.t3.rigor, '');
+  rubricHtml += `</div>`;
+
+  rubricHtml += `</div>`; // grid
+  rubricHtml += `</div>`; // panel
+
+  // Findings
+  let findingsHtml = `<div class="findings"><h4>Key Findings</h4><ul>`;
+  v.findings.forEach(f => {
+    const cls = f.toLowerCase().includes('drop') || f.toLowerCase().includes('fail') || f.toLowerCase().includes('exceed') || f.toLowerCase().includes('same question') || f.toLowerCase().includes('overlap') ? 'issue' : (f.toLowerCase().includes('exact') || f.toLowerCase().includes('clean') || f.toLowerCase().includes('strong') || f.toLowerCase().includes('excellent') || f.toLowerCase().includes('solid') || f.toLowerCase().includes('good') ? 'good' : '');
+    findingsHtml += `<li class="${cls}">${f}</li>`;
+  });
+  findingsHtml += `</ul></div>`;
+
+  container.innerHTML = `<div class="side-by-side">${planHtml}${authoredHtml}${draftHtml}</div>${rubricHtml}${findingsHtml}`;
+}
+
+const scoreCycles = {
+  'Exact': ['Exact','Partial','Missed'],
+  'Partial': ['Partial','Full','Low'],
+  'Full': ['Full','Partial','Low'],
+  'Pass': ['Pass','Flag','Fail'],
+  'Flag': ['Flag','Pass','Fail'],
+  'Fail': ['Fail','Pass','Flag'],
+  'Strong': ['Strong','Adequate','Weak'],
+  'Adequate': ['Adequate','Strong','Weak'],
+  'Weak': ['Weak','Adequate','Strong'],
+  'N/A': ['N/A'],
+  'Missed': ['Missed','Partial','Exact'],
+  'Low': ['Low','Partial','Full']
+};
+
+function cycleScore(el) {
+  const current = el.textContent.trim();
+  const cycle = scoreCycles[current] || [current];
+  const nextIdx = (cycle.indexOf(current) + 1) % cycle.length;
+  const next = cycle[nextIdx];
+  el.textContent = next;
+  el.className = 'rubric-score ' + next.toLowerCase().replace(/\//g,'');
+}
+
+function rubricRow(label, score, note) {
+  const cls = score.toLowerCase().replace(/\//g,'');
+  return `<div class="rubric-row">
+    <div class="rubric-label">${label}${note ? `<div style="font-size:11px;color:#9ca3af;margin-top:1px;">${note}</div>` : ''}</div>
+    <div class="rubric-score ${cls}" onclick="cycleScore(this)">${score}</div>
+  </div>`;
+}
+
+// Init
+renderSummaryCards();
+</script>
+</body>
+</html>
