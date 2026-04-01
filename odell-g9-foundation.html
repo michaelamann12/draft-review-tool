@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odell G9 Foundation — Draft Review Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.6; font-size: 14px; }
+
+.header { position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%); color: #fff; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.header h1 { font-size: 18px; font-weight: 700; }
+.header-meta { display: flex; gap: 12px; align-items: center; }
+.header-badge { background: rgba(255,255,255,.15); padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Summary Cards */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.summary-card { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #e5e7eb; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+.summary-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); border-color: #3b82f6; }
+.summary-card.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.card-id { font-weight: 700; font-size: 15px; color: #1e3a5f; }
+.card-type { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+.type-close-read { background: #dbeafe; color: #1e40af; }
+.type-short-response { background: #f3e8ff; color: #6b21a8; }
+.card-obj { font-size: 13px; color: #475569; margin-bottom: 8px; }
+.card-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat-pill { font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #475569; font-weight: 500; }
+.stat-pill.green { background: #dcfce7; color: #166534; }
+.stat-pill.blue { background: #dbeafe; color: #1e40af; }
+.stat-pill.purple { background: #f3e8ff; color: #6b21a8; }
+
+/* Detail View */
+.detail-view { display: none; }
+.detail-view.active { display: block; }
+.back-btn { background: none; border: none; color: #3b82f6; font-size: 14px; cursor: pointer; padding: 8px 0; margin-bottom: 16px; font-weight: 600; }
+.back-btn:hover { text-decoration: underline; }
+
+/* Panels */
+.panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.panel-grid.full { grid-template-columns: 1fr; }
+.panel { background: #fff; border-radius: 8px; padding: 16px; border: 1px solid #e5e7eb; }
+.panel-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid; }
+.panel-title.plan { color: #3b82f6; border-color: #3b82f6; }
+.panel-title.draft { color: #a855f7; border-color: #a855f7; }
+.panel-title.analysis { color: #f59e0b; border-color: #f59e0b; }
+.panel-title.qa { color: #10b981; border-color: #10b981; }
+
+/* Fields */
+.field { margin-bottom: 10px; }
+.field-label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 2px; }
+.field-value { font-size: 13px; color: #1a1a2e; }
+.field-value.verbatim { background: #fef9c3; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #f59e0b; font-style: italic; }
+.field-value.empty { color: #9ca3af; font-style: italic; }
+
+/* Question Table */
+.q-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.q-table th { text-align: left; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; padding: 6px 8px; border-bottom: 2px solid #e5e7eb; }
+.q-table td { padding: 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 13px; }
+.q-table tr:hover { background: #f8fafc; }
+.q-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: .3px; }
+.q-badge.lcq { background: #dbeafe; color: #1e40af; }
+.q-badge.tdq { background: #f3e8ff; color: #6b21a8; }
+.q-badge.highlight { background: #fef9c3; color: #854d0e; }
+.q-badge.claim { background: #fce7f3; color: #9d174d; }
+.q-badge.shortwrite { background: #dcfce7; color: #166534; }
+.q-badge.extension { background: #e0e7ff; color: #3730a3; }
+.q-badge.mc { background: #ffe4e6; color: #9f1239; }
+
+.q-source { font-size: 10px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+.q-source.verbatim { background: #dcfce7; color: #166534; }
+.q-source.outline { background: #fef9c3; color: #854d0e; }
+.q-source.generated { background: #f1f5f9; color: #64748b; }
+.q-source.planning { background: #dbeafe; color: #1e40af; }
+
+.criteria-box { font-size: 12px; color: #475569; margin-top: 4px; padding: 6px 8px; background: #f8fafc; border-radius: 4px; border-left: 2px solid #d0d5dd; }
+
+/* QA Table */
+.qa-table { width: 100%; border-collapse: collapse; }
+.qa-table td { padding: 6px 8px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+.qa-table .label { font-weight: 600; color: #475569; width: 200px; }
+.qa-pass { color: #166534; font-weight: 600; }
+.qa-fix { color: #854d0e; font-weight: 600; }
+.qa-note { color: #64748b; font-style: italic; }
+
+/* Spec Legend */
+.spec-legend { display: flex; gap: 16px; margin-bottom: 16px; padding: 10px 16px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; flex-wrap: wrap; }
+.spec-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.spec-legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.1); }
+
+/* Content blocks display */
+.content-block { background: #f0f4ff; border-left: 3px solid #3b82f6; padding: 8px 12px; margin: 4px 0; border-radius: 0 4px 4px 0; font-size: 13px; }
+
+/* Collapsible */
+details { margin-bottom: 8px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 13px; color: #3b82f6; padding: 4px 0; }
+details summary:hover { text-decoration: underline; }
+
+/* Arc visualization */
+.arc-flow { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.arc-node { padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+.arc-arrow { color: #9ca3af; font-size: 14px; }
+
+@media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } .summary-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Odell G9 Foundation Unit — Draft Review</h1>
+    <div style="font-size:12px;opacity:.8;margin-top:2px;">Section 1: Understanding Change Agents — JFK Inaugural Address</div>
+  </div>
+  <div class="header-meta">
+    <span class="header-badge">OE_SLP_XX</span>
+    <span class="header-badge">Grade 9</span>
+    <span class="header-badge">2026-04-01</span>
+    <span class="header-badge">New Curriculum</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Spec Legend -->
+  <div class="spec-legend">
+    <div class="spec-legend-item"><div class="spec-legend-swatch" style="background:#dcfce7;"></div> Verbatim from plan</div>
+    <div class="spec-legend-item"><div class="spec-legend-swatch" style="background:#fef9c3;"></div> From outline / planning notes</div>
+    <div class="spec-legend-item"><div class="spec-legend-swatch" style="background:#f1f5f9;"></div> Generated (no plan source)</div>
+    <div class="spec-legend-item"><div class="spec-legend-swatch" style="background:#fecaca;"></div> Modified by edit-draft QA</div>
+  </div>
+
+  <!-- SUMMARY VIEW -->
+  <div id="summaryView">
+    <div class="summary-grid">
+      <!-- Lesson 5 Card -->
+      <div class="summary-card" onclick="showDetail('l5')">
+        <div class="card-header">
+          <div>
+            <div class="card-id">OE_SLP_XX_G9_1.1_5_v1 &mdash; Lesson 5</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px;">ET26-8562</div>
+          </div>
+          <span class="card-type type-close-read">Close Read</span>
+        </div>
+        <div class="card-obj">Closely read JFK's inaugural address; analyze meaning, craft, and language structures</div>
+        <div class="card-stats">
+          <span class="stat-pill blue">6 DQs</span>
+          <span class="stat-pill purple">Shortwrite HS</span>
+          <span class="stat-pill green">3 QA fixes</span>
+          <span class="stat-pill">~25 min</span>
+          <span class="stat-pill">100% PIA coverage</span>
+        </div>
+      </div>
+      <!-- Lesson 7 Card -->
+      <div class="summary-card" onclick="showDetail('l7')">
+        <div class="card-header">
+          <div>
+            <div class="card-id">OE_SLP_XX_G9_1.1_7_v1 &mdash; Lesson 7</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px;">ET26-8564</div>
+          </div>
+          <span class="card-type type-short-response">Writing: Short Response</span>
+        </div>
+        <div class="card-obj">Analyze the text for the speaker's message on change</div>
+        <div class="card-stats">
+          <span class="stat-pill blue">4 DQs</span>
+          <span class="stat-pill purple">Shortwrite HS</span>
+          <span class="stat-pill green">2 QA fixes</span>
+          <span class="stat-pill">~19 min</span>
+          <span class="stat-pill">100% PIA coverage</span>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#9ca3af;font-size:13px;margin-top:8px;">Click a card to view full detail</div>
+  </div>
+
+  <!-- LESSON 5 DETAIL -->
+  <div id="detail-l5" class="detail-view">
+    <button class="back-btn" onclick="showSummary()">&larr; Back to overview</button>
+
+    <h2 style="font-size:18px;color:#1e3a5f;margin-bottom:16px;">Lesson 5 — JFK Inaugural Address Close Read</h2>
+
+    <!-- Module Plan Specs vs Draft Overview -->
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-title plan">Module Plan Specs</div>
+        <div class="field"><div class="field-label">Section</div><div class="field-value">1: Understanding Change Agents</div></div>
+        <div class="field"><div class="field-label">Replaces</div><div class="field-value">A5: Reading Closely</div></div>
+        <div class="field"><div class="field-label">Odell Tool</div><div class="field-value empty">(none specified)</div></div>
+        <div class="field"><div class="field-label">Activity Type</div><div class="field-value">Close Read</div></div>
+        <div class="field"><div class="field-label">TT Format</div><div class="field-value">Shortwrite HS</div></div>
+        <div class="field"><div class="field-label">Reader Panel</div><div class="field-value">Yes</div></div>
+        <div class="field"><div class="field-label">Supplemental Text</div><div class="field-value">No</div></div>
+        <div class="field"><div class="field-label">Text</div><div class="field-value">"Inaugural Address, 20 January 1961," JFK</div></div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">
+        <div class="field"><div class="field-label">DQ Verbatim</div><div class="field-value verbatim">What is the main premise of President Kennedy's 1961 inaugural address?</div></div>
+        <div class="field"><div class="field-label">TT Verbatim</div><div class="field-value empty">(empty)</div></div>
+        <div class="field"><div class="field-label">DQ Outline</div><div class="field-value">
+          &bull; Para 2: How does Kennedy characterize his victory?<br>
+          &bull; Para 3: "The world is very different now." How different? How same?<br>
+          &bull; Paras 16-20: What phrase is repeated? How does tone differ from 7-12?<br>
+          &bull; "Ask not" — how does it align with the rest of the speech?
+        </div></div>
+        <div class="field"><div class="field-label">Planning Notes</div><div class="field-value" style="background:#dbeafe;padding:4px 8px;border-radius:4px;border-left:3px solid #3b82f6;">Para 22: "In your hands, my fellow citizens..." — What is the purpose of this sentence?</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title analysis">Analysis & Decisions</div>
+        <div class="field"><div class="field-label">PIA Tier</div><div class="field-value">Tier 3 (module plan only) — LOW confidence</div></div>
+        <div class="field"><div class="field-label">Exemplars</div><div class="field-value">
+          G8_C.3_2 (Amplify) — Byron speech, cross-curriculum<br>
+          G8_2.0_13 (MP) — Anne Frank dialogue, cross-curriculum
+        </div></div>
+        <div class="field"><div class="field-label">Progression Strategy</div><div class="field-value">Details to Impressions</div></div>
+        <div class="field"><div class="field-label">Excerpt</div><div class="field-value">Full speech (28 paras, ~1,300 words) — complete standalone text</div></div>
+        <div class="field"><div class="field-label">Excerpt Confidence</div><div class="field-value" style="color:#166534;font-weight:600;">HIGH</div></div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">
+        <div class="field"><div class="field-label">Emphasis Balance</div><div class="field-value">
+          <strong>PRIMARY:</strong> 4 Qs (structural contrast, "Ask not" alignment, main premise)<br>
+          <strong>SUPPORTING:</strong> 2 Qs (para 2 comprehension, highlight evidence)
+        </div></div>
+        <div class="field"><div class="field-label">Time Budget</div><div class="field-value">6 DQs (~18m) + Claim+SW (~5m) + Ext (~2m) = <strong>~25 min</strong></div></div>
+
+        <div class="field"><div class="field-label">Question Arc Flow</div>
+          <div class="arc-flow">
+            <span class="arc-node q-badge lcq">Q1 LCQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q2 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge highlight">Q3 HL</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q4 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q5 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q6 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge claim">Claim</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge shortwrite">SW</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge extension">Ext</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <div class="panel-grid full">
+      <div class="panel">
+        <div class="panel-title draft">Generated Activity — Question Breakdown</div>
+
+        <div style="margin-bottom:12px;">
+          <strong style="font-size:12px;color:#6b7280;">MOJO INTRODUCTION</strong>
+          <div class="content-block">Today we're diving into one of the most famous speeches in American history &mdash; President John F. Kennedy's 1961 inaugural address. We'll explore how Kennedy uses structure and word choice to communicate his vision for America's role in the world.</div>
+          <div class="content-block">Pay attention to how Kennedy shifts between different audiences and different tones throughout the speech &mdash; these shifts reveal a lot about his central message.</div>
+          <div class="content-block">Make sure you've read the inaugural address on the left.</div>
+        </div>
+
+        <table class="q-table">
+          <thead><tr><th style="width:30px;">#</th><th style="width:80px;">Type</th><th>Question</th><th style="width:80px;">Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="q-badge lcq">LCQ</span></td>
+              <td>According to paragraph 2, how does President Kennedy characterize his inauguration?
+                <details><summary>Criteria</summary><div class="criteria-box">Student identifies that Kennedy frames the inauguration as a celebration of freedom, renewal, and change &mdash; not a partisan victory.</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>In paragraph 3, Kennedy says "The world is very different now." What is different about the world, and what does Kennedy say has stayed the same?
+                <details><summary>Criteria</summary><div class="criteria-box">Student identifies that the difference is humanity's power to destroy poverty and life, while the same revolutionary beliefs about human rights remain at stake.</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="q-badge highlight">HL</span></td>
+              <td>Highlight one phrase from paragraphs 7&ndash;12 that shows who Kennedy is directing his message toward.
+                <details><summary>Criteria</summary><div class="criteria-box">Student highlights a phrase identifying one of Kennedy's addressed audiences, such as "To those old allies," "To those new states," etc.</div></details>
+              </td>
+              <td><span class="q-source generated">Generated</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>What phrase is repeated in paragraphs 16&ndash;20, and how does the tone of this section differ from paragraphs 7&ndash;12?
+                <details><summary>Criteria</summary><div class="criteria-box">Student identifies "Let both sides" as the repeated phrase and explains the tone shifts from pledges to specific groups (7-12) to mutual cooperation (16-20).</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>In paragraph 22, Kennedy says, "In your hands, my fellow citizens, more than mine, will rest the final success or failure of our course." What is the purpose of this sentence?
+                <details><summary>Criteria</summary><div class="criteria-box">Student explains that Kennedy shifts responsibility from himself to the citizens.</div></details>
+              </td>
+              <td><span class="q-source planning">Planning Notes</span></td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>How does Kennedy's "Ask not" challenge align with the rest of the speech?
+                <details><summary>Criteria</summary><div class="criteria-box">Student connects the "Ask not" line to the speech's broader themes of collective action, sacrifice, cooperation, and civic responsibility.</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr style="background:#faf5ff;">
+              <td></td>
+              <td><span class="q-badge claim">Claim</span></td>
+              <td>Consider the evidence you gathered from across the speech. In one sentence, write a claim that answers: What is the main premise of President Kennedy's 1961 inaugural address?</td>
+              <td><span class="q-source verbatim">Verbatim</span></td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td></td>
+              <td><span class="q-badge shortwrite">SW</span></td>
+              <td>What is the main premise of President Kennedy's 1961 inaugural address? Respond in a paragraph with a claim, two pieces of evidence, and elaboration for each.
+                <details><summary>Criteria</summary><div class="criteria-box">Student writes a paragraph with a clear claim, two distinct evidence pieces from different sections, and explanations connecting each to the claim.</div></details>
+              </td>
+              <td><span class="q-source verbatim">Verbatim</span></td>
+            </tr>
+            <tr style="background:#eef2ff;">
+              <td></td>
+              <td><span class="q-badge extension">Ext</span></td>
+              <td>Kennedy delivered this speech when nuclear conflict felt like a real possibility. What modern challenge do you think would replace the Cold War as an inaugural address's central concern, and why?
+                <details><summary>Criteria</summary><div class="criteria-box">Student names a specific modern challenge and explains why it would be central.</div></details>
+              </td>
+              <td><span class="q-source generated">Generated</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:12px;">
+          <strong style="font-size:12px;color:#6b7280;">MOJO CONCLUSION</strong>
+          <div class="content-block">Nice work today! You've practiced tracing how a speaker builds an argument across an entire speech &mdash; from specific pledges to a single powerful call to action.</div>
+          <div class="content-block">Next time you read a persuasive speech, look for how the speaker organizes different appeals before landing on a central message. That structural buildup is often where the real persuasive power lives.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QA Results -->
+    <div class="panel-grid full">
+      <div class="panel">
+        <div class="panel-title qa">Edit-Draft QA Results</div>
+        <table class="qa-table">
+          <tr><td class="label">Issues detected</td><td><strong>3 found, 3 fixed</strong></td></tr>
+          <tr><td class="label">Q3 type: "highlight as answer"</td><td><span class="qa-fix">FIXED</span> &rarr; Corrected to "highlight" (glossary-compliant)</td></tr>
+          <tr><td class="label">Q6: 16-word embedded quote</td><td><span class="qa-fix">FIXED</span> &rarr; Shortened to 2-word quote ("Ask not"), now 13 words</td></tr>
+          <tr><td class="label">Extension: 44 words over limit</td><td><span class="qa-fix">FIXED</span> &rarr; Trimmed to 30 words</td></tr>
+          <tr><td class="label">Q4-Q5-Q6: 3 consecutive TDQs</td><td><span class="qa-note">Noted &mdash; all from module plan; reclassifying would misrepresent demand</span></td></tr>
+          <tr><td class="label">PIA coverage</td><td><span class="qa-pass">100% &mdash; all 7 analytical moves addressed</span></td></tr>
+          <tr><td class="label">Verbatim fidelity</td><td><span class="qa-pass">Pass</span></td></tr>
+          <tr><td class="label">All criteria present</td><td><span class="qa-pass">Pass</span></td></tr>
+          <tr><td class="label">Word limits</td><td><span class="qa-pass">Pass (after fixes)</span></td></tr>
+          <tr><td class="label">Content blocks</td><td><span class="qa-pass">Pass &mdash; Intro, Transition, Conclusion all present</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- LESSON 7 DETAIL -->
+  <div id="detail-l7" class="detail-view">
+    <button class="back-btn" onclick="showSummary()">&larr; Back to overview</button>
+
+    <h2 style="font-size:18px;color:#1e3a5f;margin-bottom:16px;">Lesson 7 — Kennedy's Message on Change</h2>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-title plan">Module Plan Specs</div>
+        <div class="field"><div class="field-label">Section</div><div class="field-value">1: Understanding Change Agents</div></div>
+        <div class="field"><div class="field-label">Replaces</div><div class="field-value">A3: Analyzing Texts (Analyzing Relationships Tool)</div></div>
+        <div class="field"><div class="field-label">Odell Tool</div><div class="field-value">Analyzing Relationships Tool</div></div>
+        <div class="field"><div class="field-label">Activity Type</div><div class="field-value">Writing: Short Response</div></div>
+        <div class="field"><div class="field-label">TT Format</div><div class="field-value">Shortwrite HS</div></div>
+        <div class="field"><div class="field-label">Reader Panel</div><div class="field-value">Yes</div></div>
+        <div class="field"><div class="field-label">Supplemental Text</div><div class="field-value">No</div></div>
+        <div class="field"><div class="field-label">Text</div><div class="field-value">"Inaugural Address, 20 January 1961," JFK (same text as L5)</div></div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">
+        <div class="field"><div class="field-label">DQ Verbatim</div><div class="field-value verbatim">Who does Kennedy believe is responsible for change?</div></div>
+        <div class="field"><div class="field-label">TT Verbatim</div><div class="field-value verbatim">What is Kennedy's message about change?</div></div>
+        <div class="field"><div class="field-label">DQ Outline</div><div class="field-value">
+          &bull; Highlight words/phrases denoting the concept of change<br>
+          &bull; Analysis of positive and cooperative word choice about change
+        </div></div>
+        <div class="field"><div class="field-label">Planning Notes</div><div class="field-value" style="background:#dbeafe;padding:4px 8px;border-radius:4px;border-left:3px solid #3b82f6;">Might want to excerpt part of the speech.</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title analysis">Analysis & Decisions</div>
+        <div class="field"><div class="field-label">PIA Tier</div><div class="field-value">Tier 3 (module plan only) — LOW confidence</div></div>
+        <div class="field"><div class="field-label">Exemplars</div><div class="field-value">Same as L5 (cross-curriculum G8 speech exemplars)</div></div>
+        <div class="field"><div class="field-label">Progression Strategy</div><div class="field-value">Word Choice Analysis</div></div>
+        <div class="field"><div class="field-label">Excerpt</div><div class="field-value">Full speech (28 paras, ~1,300 words) — retained despite "might want to excerpt" note; change theme runs throughout</div></div>
+        <div class="field"><div class="field-label">Excerpt Confidence</div><div class="field-value" style="color:#166534;font-weight:600;">HIGH</div></div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">
+        <div class="field"><div class="field-label">Emphasis Balance</div><div class="field-value">
+          <strong>PRIMARY:</strong> 2 Qs (responsibility for change, rhetorical craft)<br>
+          <strong>SUPPORTING:</strong> 2 Qs (highlight evidence gathering)
+        </div></div>
+        <div class="field"><div class="field-label">Time Budget</div><div class="field-value">4 DQs (~12m) + Claim+SW (~5m) + Ext (~2m) = <strong>~19 min</strong></div></div>
+        <div class="field"><div class="field-label">Key Decision</div><div class="field-value">Narrower analytical lens than L5 — focused specifically on "change" as a concept. Fewer DQs, two highlights to build evidence base before analysis.</div></div>
+
+        <div class="field"><div class="field-label">Question Arc Flow</div>
+          <div class="arc-flow">
+            <span class="arc-node q-badge highlight">Q1 HL</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge highlight">Q2 HL</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q3 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge tdq">Q4 TDQ</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge claim">Claim</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge shortwrite">SW</span><span class="arc-arrow">&rarr;</span>
+            <span class="arc-node q-badge extension">Ext</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <div class="panel-grid full">
+      <div class="panel">
+        <div class="panel-title draft">Generated Activity — Question Breakdown</div>
+
+        <div style="margin-bottom:12px;">
+          <strong style="font-size:12px;color:#6b7280;">MOJO INTRODUCTION</strong>
+          <div class="content-block">We're returning to President Kennedy's inaugural address, but this time we're focusing on one specific idea: change. We'll explore how Kennedy uses word choice and structure to communicate who is responsible for making change happen.</div>
+          <div class="content-block">As you reread, pay attention to words and phrases that connect to the concept of change &mdash; renewal, cooperation, action, responsibility.</div>
+          <div class="content-block">Make sure you've read the inaugural address on the left.</div>
+        </div>
+
+        <table class="q-table">
+          <thead><tr><th style="width:30px;">#</th><th style="width:80px;">Type</th><th>Question</th><th style="width:80px;">Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="q-badge highlight">HL</span></td>
+              <td>Highlight one word or phrase from paragraphs 2&ndash;5 that connects to the concept of change or renewal.
+                <details><summary>Criteria</summary><div class="criteria-box">Student highlights a word or phrase related to change: "renewal," "change," "the torch has been passed," "a new generation," etc.</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="q-badge highlight">HL</span></td>
+              <td>Highlight one word or phrase from paragraphs 15&ndash;21 that shows Kennedy using positive or cooperative language about change.
+                <details><summary>Criteria</summary><div class="criteria-box">Student highlights a word or phrase conveying cooperation or positive transformation: "begin anew," "explore what problems unite us," "a new world of law," "let us begin," etc.</div></details>
+              </td>
+              <td><span class="q-source outline">Outline</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>Why does Kennedy repeat the phrase "Let both sides" in paragraphs 16&ndash;20?
+                <details><summary>Criteria</summary><div class="criteria-box">Student explains the purpose or effect of the repetition &mdash; e.g., emphasizes cooperation, creates urgency, frames issues as shared.</div></details>
+              </td>
+              <td><span class="q-source generated" style="background:#fecaca;color:#991b1b;">QA Fix</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="q-badge tdq">TDQ</span></td>
+              <td>Who does Kennedy believe is responsible for change?
+                <details><summary>Criteria</summary><div class="criteria-box">Student identifies that Kennedy places responsibility on citizens &mdash; not just leaders or himself. Evidence: "In your hands" (para 22), "Ask not" (para 26), or repeated "we"/"us."</div></details>
+              </td>
+              <td><span class="q-source verbatim">Verbatim</span></td>
+            </tr>
+            <tr style="background:#faf5ff;">
+              <td></td>
+              <td><span class="q-badge claim">Claim</span></td>
+              <td>Consider the evidence you gathered about Kennedy's language around change and responsibility. In one sentence, write a claim that answers: What is Kennedy's message about change?</td>
+              <td><span class="q-source verbatim">Verbatim</span></td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td></td>
+              <td><span class="q-badge shortwrite">SW</span></td>
+              <td>What is Kennedy's message about change? Respond in a paragraph with a claim, two pieces of evidence, and elaboration for each.
+                <details><summary>Criteria</summary><div class="criteria-box">Student writes a paragraph with a clear claim about Kennedy's message on change, two distinct evidence pieces, and explanations connecting each to the claim.</div></details>
+              </td>
+              <td><span class="q-source verbatim">Verbatim</span></td>
+            </tr>
+            <tr style="background:#eef2ff;">
+              <td></td>
+              <td><span class="q-badge extension">Ext</span></td>
+              <td>Kennedy challenges citizens to be responsible for change. What is one change you believe your generation is responsible for making, and why?
+                <details><summary>Criteria</summary><div class="criteria-box">Student names a specific change and explains why their generation is responsible.</div></details>
+              </td>
+              <td><span class="q-source generated">Generated</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:12px;">
+          <strong style="font-size:12px;color:#6b7280;">MOJO CONCLUSION</strong>
+          <div class="content-block">Nice work today! You've practiced analyzing how a speaker's word choice reveals their message &mdash; tracing the language of change, cooperation, and responsibility across a full speech.</div>
+          <div class="content-block">Next time you read a persuasive text, look for the specific words the author repeats and the tone those words create. That pattern of language often reveals the deeper message the author wants you to take away.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QA Results -->
+    <div class="panel-grid full">
+      <div class="panel">
+        <div class="panel-title qa">Edit-Draft QA Results</div>
+        <table class="qa-table">
+          <tr><td class="label">Issues detected</td><td><strong>2 found, 1 fix applied (resolving both)</strong></td></tr>
+          <tr><td class="label">Q3: Compound question</td><td><span class="qa-fix">FIXED</span> &rarr; "What kind of change + what tone" was two asks joined by "and"</td></tr>
+          <tr><td class="label">Q3: DQ-TT overlap</td><td><span class="qa-fix">FIXED</span> &rarr; "What kind of change does Kennedy envision" overlapped with TT "What is Kennedy's message about change"</td></tr>
+          <tr><td class="label">Fix applied</td><td>Rewrote Q3 to: "Why does Kennedy repeat 'Let both sides' in paragraphs 16&ndash;20?" &mdash; targets specific craft, no TT overlap</td></tr>
+          <tr><td class="label">PIA coverage</td><td><span class="qa-pass">100% &mdash; all 4 analytical moves addressed</span></td></tr>
+          <tr><td class="label">Verbatim fidelity</td><td><span class="qa-pass">Pass &mdash; TT and DQ verbatim match plan exactly</span></td></tr>
+          <tr><td class="label">All criteria present</td><td><span class="qa-pass">Pass</span></td></tr>
+          <tr><td class="label">Word limits</td><td><span class="qa-pass">Pass</span></td></tr>
+          <tr><td class="label">Content blocks</td><td><span class="qa-pass">Pass &mdash; Intro, Transition, Conclusion all present</span></td></tr>
+          <tr><td class="label">TT insight leaking</td><td><span class="qa-pass">Pass (after fix)</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showDetail(id) {
+  document.getElementById('summaryView').style.display = 'none';
+  document.querySelectorAll('.detail-view').forEach(d => d.classList.remove('active'));
+  document.getElementById('detail-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showSummary() {
+  document.getElementById('summaryView').style.display = 'block';
+  document.querySelectorAll('.detail-view').forEach(d => d.classList.remove('active'));
+  window.scrollTo(0, 0);
+}
+</script>
+
+</body>
+</html>
